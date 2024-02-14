@@ -1,8 +1,10 @@
-package core
+package lexer
 
 import (
 	"strings"
 	"unicode"
+
+	"me.weldnor/swede/core/common"
 )
 
 type Lexer struct {
@@ -66,18 +68,18 @@ func (l *Lexer) matchString(expected string) bool {
 	return true
 }
 
-func (l *Lexer) addToken(lexemeType LexemeType, startPosition Position, endPosition Position, value string) {
+func (l *Lexer) addToken(lexemeType LexemeType, startPosition common.Position, endPosition common.Position, value string) {
 	l.lexemes = append(l.lexemes, Lexeme{lexemeType, startPosition, endPosition, value})
 }
 
-func (l *Lexer) getPosition() Position {
-	return Position{offset: l.offset, line: l.line, column: l.column}
+func (l *Lexer) getPosition() common.Position {
+	return common.Position{Offset: l.offset, Line: l.line, Column: l.column}
 }
 
-func (l *Lexer) setPosition(position Position) {
-	l.offset = position.offset
-	l.line = position.line
-	l.column = position.column
+func (l *Lexer) setPosition(position common.Position) {
+	l.offset = position.Offset
+	l.line = position.Line
+	l.column = position.Column
 }
 
 const (
@@ -129,11 +131,11 @@ func scanWord(l *Lexer) bool {
 	startPosition := l.getPosition()
 
 	if l.matchString(scenarioWord) {
-		l.addToken(SCENARIO_WORD, startPosition, Position{l.offset - 1, l.line, l.column - 1}, scenarioWord)
+		l.addToken(SCENARIO_WORD, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, scenarioWord)
 	}
 
 	if l.matchString(featureWord) {
-		l.addToken(FEATURE_WORD, startPosition, Position{l.offset - 1, l.line, l.column - 1}, featureWord)
+		l.addToken(FEATURE_WORD, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, featureWord)
 	}
 
 	sb := strings.Builder{}
@@ -147,7 +149,7 @@ func scanWord(l *Lexer) bool {
 		l.advance()
 	}
 
-	l.addToken(WORD, startPosition, Position{l.offset - 1, l.line, l.column - 1}, sb.String())
+	l.addToken(WORD, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, sb.String())
 	return true
 }
 
@@ -169,7 +171,7 @@ func scanSpace(l *Lexer) bool {
 		return false
 	}
 
-	l.addToken(SPACE, startPosition, Position{l.offset - 1, l.line, l.column - 1}, sb.String())
+	l.addToken(SPACE, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, sb.String())
 	return true
 }
 
@@ -226,14 +228,14 @@ func scanNl(l *Lexer) bool {
 	startPosition := l.getPosition()
 
 	if l.matchString("\r\n") {
-		l.addToken(NL, startPosition, Position{l.offset - 1, l.line, l.column - 1}, "\r\n")
+		l.addToken(NL, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, "\r\n")
 		l.line++
 		l.column = 0
 		return true
 	}
 
 	if l.matchString("\n") {
-		l.addToken(NL, startPosition, Position{l.offset - 1, l.line, l.column - 1}, "\n")
+		l.addToken(NL, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, "\n")
 		l.line++
 		l.column = 0
 		return true

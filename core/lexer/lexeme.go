@@ -1,9 +1,11 @@
-package core
+package lexer
+
+import "me.weldnor/swede/core/common"
 
 type Lexeme struct {
 	Type          LexemeType
-	startPosition Position
-	endPosition   Position
+	startPosition common.Position
+	endPosition   common.Position
 	value         string
 }
 
