@@ -1,8 +1,10 @@
 package lexer
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"me.weldnor/swede/core/common"
 )
 
 const code string = `
@@ -27,13 +29,18 @@ Scenario: Division by zero
 
 `
 
-func TestLexer(t *testing.T) {
+func TestLexerForCodeExample(t *testing.T) {
 
 	lexer := NewLexer(code)
 	lexemes := lexer.Scan()
 
-	for _, lexeme := range lexemes {
-		fmt.Println(lexeme)
+	var expectedLexemes = []Lexeme{
+		{AT_CHR, common.Position{Offset: 1, Line: 1, Column: 0}, common.Position{Offset: 1, Line: 1, Column: 0}, "@"},
+		{WORD, common.Position{Offset: 2, Line: 1, Column: 1}, common.Position{Offset: 4, Line: 1, Column: 3}, "all"},
+	}
+
+	for _, expectedLexeme := range expectedLexemes {
+		assert.Contains(t, lexemes, expectedLexeme)
 	}
 
 }
