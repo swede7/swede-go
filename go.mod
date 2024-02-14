@@ -1,3 +1,3 @@
-module me.weldnor/swede-go
+module me.weldnor/swede
 
-go 1.20
+go 1.22
