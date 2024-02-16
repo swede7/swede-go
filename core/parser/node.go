@@ -11,4 +11,12 @@ type Node struct {
 
 type NodeType string
 
-const ()
+const (
+	ROOT       NodeType = "ROOT"
+	UNEXPECTED          = "UNEXPECTED"
+	COMMENT             = "COMMENT"
+	SCENARIO            = "SCENARIO"
+	FEATURE             = "FEATURE"
+	STEP                = "STEP"
+	TAG                 = "TAG"
+)
