@@ -4,9 +4,9 @@ import "me.weldnor/swede/core/common"
 
 type Lexeme struct {
 	Type          LexemeType
-	startPosition common.Position
-	endPosition   common.Position
-	value         string
+	StartPosition common.Position
+	EndPosition   common.Position
+	Value         string
 }
 
 type LexemeType string
