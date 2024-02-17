@@ -31,3 +31,19 @@ func (node *Node) AppendChild(child *Node) {
 func (node *Node) PrependChild(child *Node) {
 	node.Children = append([]*Node{child}, node.Children...)
 }
+
+func (node *Node) GetChildrenByType(nodeType NodeType) []*Node {
+	result := make([]*Node, 0)
+
+	for _, child := range node.Children {
+		if child.Type == nodeType {
+			result = append(result, child)
+		}
+	}
+	return result
+}
+
+func (node *Node) GetChildByType(nodeType NodeType) *Node {
+	children := node.GetChildrenByType(nodeType)
+	return children[0]
+}
