@@ -1,7 +1,10 @@
+/*
+Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+*/
 package main
 
-import "fmt"
+import "me.weldnor/swede/cmd"
 
 func main() {
-	fmt.Println("hello world!")
+	cmd.Execute()
 }
