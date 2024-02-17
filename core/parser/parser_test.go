@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"me.weldnor/swede/core/lexer"
 )
 
 const code string = `
 @all
 Feature: Basic calculator operations
-
-This feature defines a set of operations that the calculator must support.
 
 # Comment example
 
@@ -28,12 +27,36 @@ Scenario: Division by zero
 - Аn exception must be thrown
 `
 
-func TestParser(t *testing.T) {
+func TestParserWithValidCode(t *testing.T) {
 	lexer := lexer.NewLexer(code)
 	lexemes := lexer.Scan()
 
 	parser := NewParser(lexemes)
 	result := parser.Parse()
 
+	fmt.Print(result.RootNode)
 	fmt.Print(result.Errors)
+}
+
+func TestParserAddTagToFeatureRule(t *testing.T) {
+	lexer := lexer.NewLexer("@example\nFeature: hello world")
+	lexemes := lexer.Scan()
+
+	parser := NewParser(lexemes)
+	result := parser.Parse()
+
+	assert.Empty(t, result.Errors)
+
+	rootNode := result.RootNode
+	assert.NotNil(t, rootNode)
+
+	assert.Len(t, rootNode.Children, 1)
+
+	assert.Equal(t, FEATURE, rootNode.Children[0].Type)
+
+	featureNode := rootNode.Children[0]
+
+	assert.Len(t, featureNode.Children, 1)
+
+	assert.Equal(t, TAG, featureNode.Children[0].Type)
 }

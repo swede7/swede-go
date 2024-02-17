@@ -16,12 +16,12 @@ type NodeType string
 
 const (
 	ROOT       NodeType = "ROOT"
-	UNEXPECTED          = "UNEXPECTED"
-	COMMENT             = "COMMENT"
-	SCENARIO            = "SCENARIO"
-	FEATURE             = "FEATURE"
-	STEP                = "STEP"
-	TAG                 = "TAG"
+	UNEXPECTED NodeType = "UNEXPECTED"
+	COMMENT    NodeType = "COMMENT"
+	SCENARIO   NodeType = "SCENARIO"
+	FEATURE    NodeType = "FEATURE"
+	STEP       NodeType = "STEP"
+	TAG        NodeType = "TAG"
 )
 
 func (node *Node) AppendChild(child *Node) {

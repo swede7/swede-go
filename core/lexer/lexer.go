@@ -84,7 +84,7 @@ func (l *Lexer) setPosition(position common.Position) {
 
 const (
 	featureWord  string = "Feature:"
-	scenarioWord string = "Feature:"
+	scenarioWord string = "Scenario:"
 )
 
 func NewLexer(source string) *Lexer {

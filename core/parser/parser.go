@@ -8,11 +8,10 @@ import (
 )
 
 type Parser struct {
-	position int
-	lexemes  []lexer.Lexeme
-	nodes    []Node
-	errors   []Error
-	pos      int
+	lexemes []lexer.Lexeme
+	nodes   []*Node
+	errors  []Error
+	pos     int
 }
 
 type ParserResult struct {
@@ -22,8 +21,7 @@ type ParserResult struct {
 
 func NewParser(lexemes []lexer.Lexeme) *Parser {
 	return &Parser{
-		position: 0,
-		lexemes:  lexemes,
+		lexemes: lexemes,
 	}
 }
 
@@ -48,7 +46,7 @@ func (p *Parser) lexemesLeft() int {
 }
 
 func (p *Parser) addNode(node Node) {
-	p.nodes = append(p.nodes, node)
+	p.nodes = append(p.nodes, &node)
 }
 
 func (p *Parser) addError(startPosition common.Position, endPosition common.Position, message string) {
@@ -101,7 +99,7 @@ func (p *Parser) Parse() ParserResult {
 	}
 
 	for _, node := range p.nodes {
-		rootNode.AppendChild(&node)
+		rootNode.AppendChild(node)
 		rootNode.EndPosition = node.EndPosition
 	}
 
@@ -217,8 +215,8 @@ func addTagToFeatureRule(p *Parser) bool {
 	currentNode := p.nodes[len(p.nodes)-1]
 
 	if previousNode.Type == TAG && currentNode.Type == FEATURE {
-		currentNode.PrependChild(&previousNode)
-		p.nodes = p.nodes[0 : len(p.nodes)-2]
+		currentNode.PrependChild(previousNode)
+		p.removeNodeByIndex(len(p.nodes) - 2)
 		return true
 	}
 
@@ -264,7 +262,7 @@ func addTagToScenarioRule(p *Parser) bool {
 	currentNode := p.nodes[len(p.nodes)-1]
 
 	if previousNode.Type == TAG && currentNode.Type == SCENARIO {
-		currentNode.PrependChild(&previousNode)
+		currentNode.PrependChild(previousNode)
 		p.removeNodeByIndex(len(p.nodes) - 2)
 		return true
 	}
@@ -305,7 +303,7 @@ func addStepToScenarioRule(p *Parser) bool {
 	currentNode := p.nodes[len(p.nodes)-1]
 
 	if previousNode.Type == SCENARIO && currentNode.Type == STEP {
-		previousNode.AppendChild(&currentNode)
+		previousNode.AppendChild(currentNode)
 		p.removeNodeByIndex(len(p.nodes) - 1)
 		return true
 	}
@@ -342,8 +340,8 @@ func handleUnexpectedNodesRule(p *Parser) bool {
 	for i, node := range p.nodes {
 		if _, ok := validNodeTypes[node.Type]; !ok {
 			wrapperNode := Node{Type: UNEXPECTED, StartPosition: node.StartPosition, EndPosition: node.EndPosition, Value: node.Value}
-			wrapperNode.AppendChild(&node)
-			p.nodes[i] = wrapperNode
+			wrapperNode.AppendChild(node)
+			p.nodes[i] = &wrapperNode
 			p.addError(node.StartPosition, node.EndPosition, "unexpected node")
 			someNodesWasProcessed = true
 		}
