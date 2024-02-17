@@ -1,37 +1,24 @@
 package formatter
 
 import (
-	"errors"
 	"strings"
 
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 )
 
 type Formatter struct {
-	source string
-	sb     strings.Builder
+	rootNode parser.Node
+	sb       strings.Builder
 }
 
-func NewFormatter(code string) *Formatter {
+func NewFormatter(rootNode *parser.Node) *Formatter {
 	return &Formatter{
-		source: code,
+		rootNode: *rootNode,
 	}
 }
 
 func (f Formatter) Format() (string, error) {
-	lexer := lexer.NewLexer(f.source)
-	parser := parser.NewParser(lexer.Scan())
-
-	result := parser.Parse()
-
-	if len(result.Errors) > 0 {
-		return f.source, errors.New("found error(s) while parse source code")
-	}
-
-	rootNode := result.RootNode
-
-	for _, node := range rootNode.Children {
+	for _, node := range f.rootNode.Children {
 		f.formatNode(node)
 	}
 

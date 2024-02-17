@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"me.weldnor/swede/core/lexer"
+	"me.weldnor/swede/core/parser"
 )
 
 const code string = `
@@ -39,7 +41,11 @@ Scenario: Division by zero
 `
 
 func TestFormatter_Format(t *testing.T) {
-	formatter := NewFormatter(code)
+	lexer := lexer.NewLexer(code)
+	parser := parser.NewParser(lexer.Scan())
+
+	rootNode := parser.Parse().RootNode
+	formatter := NewFormatter(&rootNode)
 
 	formattedCode, err := formatter.Format()
 	assert.Nil(t, err)
