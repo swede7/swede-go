@@ -47,3 +47,11 @@ func (node *Node) GetChildByType(nodeType NodeType) *Node {
 	children := node.GetChildrenByType(nodeType)
 	return children[0]
 }
+
+func VisitNode(node *Node, action func(*Node)) {
+	action(node)
+
+	for _, child := range node.Children {
+		VisitNode(child, action)
+	}
+}
