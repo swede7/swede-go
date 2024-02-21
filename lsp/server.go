@@ -94,7 +94,7 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 	rootNode := parserResult.RootNode
 
 	formatter := formatter.NewFormatter(&parserResult.RootNode)
-	formattedCode, err := formatter.Format()
+	formattedCode, err := formatter.FormatParallel()
 
 	if err != nil {
 		panic("oops: failed to format code")
