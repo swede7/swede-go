@@ -114,14 +114,14 @@ func emptyStepTextRule(l *Linter) []LinterError {
 
 	parser.VisitNode(l.rootNode, func(n *parser.Node) {
 
-		if n.Type != parser.SCENARIO {
+		if n.Type != parser.STEP {
 			return
 		}
 
 		if strings.TrimSpace(n.Value) == "" {
 			e := LinterError{StartPosition: n.StartPosition,
 				EndPosition: n.EndPosition,
-				Message:     "Scenario text is empty",
+				Message:     "Step text is empty",
 				Severity:    WARN,
 			}
 

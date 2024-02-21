@@ -40,14 +40,14 @@ Scenario: Division by zero
 
 `
 
-func TestFormatter_Format(t *testing.T) {
+func TestFormatter_FormatParallel(t *testing.T) {
 	lexer := lexer.NewLexer(code)
 	parser := parser.NewParser(lexer.Scan())
 
 	rootNode := parser.Parse().RootNode
 	formatter := NewFormatter(&rootNode)
 
-	formattedCode, err := formatter.Format()
+	formattedCode, err := formatter.FormatParallel()
 	assert.Nil(t, err)
 
 	fmt.Print(formattedCode)

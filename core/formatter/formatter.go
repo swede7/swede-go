@@ -2,13 +2,13 @@ package formatter
 
 import (
 	"strings"
+	"sync"
 
 	"me.weldnor/swede/core/parser"
 )
 
 type Formatter struct {
 	rootNode parser.Node
-	sb       strings.Builder
 }
 
 func NewFormatter(rootNode *parser.Node) *Formatter {
@@ -17,74 +17,87 @@ func NewFormatter(rootNode *parser.Node) *Formatter {
 	}
 }
 
-func (f Formatter) Format() (string, error) {
-	for _, node := range f.rootNode.Children {
-		f.formatNode(node)
-	}
+func (f *Formatter) FormatParallel() (string, error) {
+	var wg sync.WaitGroup
+	results := make([]string, len(f.rootNode.Children))
 
-	return f.sb.String(), nil
+	for i, node := range f.rootNode.Children {
+		wg.Add(1)
+		go func(i int, node *parser.Node) {
+			defer wg.Done()
+			results[i] = f.formatNode(node)
+		}(i, node)
+	}
+	wg.Wait()
+
+	return strings.Join(results, ""), nil
 }
 
-func (f *Formatter) formatNode(node *parser.Node) {
+func (f *Formatter) formatNode(node *parser.Node) string {
+	var sb strings.Builder
+
 	switch node.Type {
 	case parser.FEATURE:
-		f.formatFeature(node)
+		f.formatFeature(&sb, node)
 	case parser.COMMENT:
-		f.formatComment(node)
+		f.formatComment(&sb, node)
 	case parser.SCENARIO:
-		f.formatScenario(node)
+		f.formatScenario(&sb, node)
 	}
+
+	return sb.String()
 }
 
-func (f *Formatter) formatFeature(node *parser.Node) {
+// ... rest of the Formatter methods, modified to take a *strings.Builder as the first argument ...
+func (f *Formatter) formatFeature(sb *strings.Builder, node *parser.Node) {
 	tagNodes := node.GetChildrenByType(parser.TAG)
 
 	for _, tagNode := range tagNodes {
-		f.formatTag(tagNode)
+		f.formatTag(sb, tagNode)
 	}
-	f.sb.WriteString("\n")
+	sb.WriteString("\n")
 
-	f.sb.WriteString("Feature: ")
-	f.sb.WriteString(strings.TrimSpace(node.Value))
-	f.sb.WriteString("\n\n")
+	sb.WriteString("Feature: ")
+	sb.WriteString(strings.TrimSpace(node.Value))
+	sb.WriteString("\n\n")
 
 }
 
-func (f *Formatter) formatTag(node *parser.Node) {
-	f.sb.WriteString("@")
-	f.sb.WriteString(strings.TrimSpace(node.Value))
-	f.sb.WriteString(" ")
+func (f *Formatter) formatTag(sb *strings.Builder, node *parser.Node) {
+	sb.WriteString("@")
+	sb.WriteString(strings.TrimSpace(node.Value))
+	sb.WriteString(" ")
 }
 
-func (f *Formatter) formatScenario(node *parser.Node) {
+func (f *Formatter) formatScenario(sb *strings.Builder, node *parser.Node) {
 	tagNodes := node.GetChildrenByType(parser.TAG)
 
 	for _, tagNode := range tagNodes {
-		f.formatTag(tagNode)
+		f.formatTag(sb, tagNode)
 	}
-	f.sb.WriteString("\n")
+	sb.WriteString("\n")
 
-	f.sb.WriteString("Scenario: ")
-	f.sb.WriteString(strings.TrimSpace(node.Value))
-	f.sb.WriteString("\n")
+	sb.WriteString("Scenario: ")
+	sb.WriteString(strings.TrimSpace(node.Value))
+	sb.WriteString("\n")
 
 	stepNodes := node.GetChildrenByType(parser.STEP)
 
 	for _, stepNode := range stepNodes {
-		f.formatStep(stepNode)
+		f.formatStep(sb, stepNode)
 	}
-	f.sb.WriteString("\n")
+	sb.WriteString("\n")
 
 }
 
-func (f *Formatter) formatStep(node *parser.Node) {
-	f.sb.WriteString("- ")
-	f.sb.WriteString(strings.TrimSpace(node.Value))
-	f.sb.WriteString("\n")
+func (f *Formatter) formatStep(sb *strings.Builder, node *parser.Node) {
+	sb.WriteString("- ")
+	sb.WriteString(strings.TrimSpace(node.Value))
+	sb.WriteString("\n")
 }
 
-func (f *Formatter) formatComment(node *parser.Node) {
-	f.sb.WriteString("# ")
-	f.sb.WriteString(strings.TrimSpace(node.Value))
-	f.sb.WriteString("\n\n")
+func (f *Formatter) formatComment(sb *strings.Builder, node *parser.Node) {
+	sb.WriteString("# ")
+	sb.WriteString(strings.TrimSpace(node.Value))
+	sb.WriteString("\n\n")
 }
