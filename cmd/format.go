@@ -27,6 +27,7 @@ func formatFilesParallel(paths []string) {
 	statusChan := make(chan string)
 
 	for _, path := range paths {
+		path := path
 		go func() {
 			err := formatFile(path)
 
@@ -48,6 +49,10 @@ func formatFilesParallel(paths []string) {
 
 func formatFile(path string) error {
 	code, err := os.ReadFile(path)
+
+	if err != nil {
+		return errors.New("cant read file: " + path)
+	}
 
 	lexer := lexer.NewLexer(string(code))
 	parser := parser.NewParser(lexer.Scan())

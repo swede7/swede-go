@@ -27,11 +27,12 @@ var lintCmd = &cobra.Command{
 
 func lintFilesParallel(paths []string) {
 	wg := &sync.WaitGroup{}
-	mutex := sync.Mutex{}
+	mutex := &sync.Mutex{}
 
 	for _, path := range paths {
 		wg.Add(1)
 
+		path := path
 		go func() {
 			defer wg.Done()
 			linterErrors, err := lintFile(path, mutex)
@@ -61,7 +62,7 @@ func lintFilesParallel(paths []string) {
 	wg.Wait()
 }
 
-func lintFile(path string, mutex sync.Mutex) ([]linter.LinterError, error) {
+func lintFile(path string, mutex *sync.Mutex) ([]linter.LinterError, error) {
 	code, err := os.ReadFile(path)
 
 	if err != nil {
