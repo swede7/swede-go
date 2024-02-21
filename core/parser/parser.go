@@ -92,11 +92,13 @@ func (p *Parser) Parse() ParserResult {
 		}
 	}
 
-	rootNode := Node{
-		Type:          ROOT,
-		StartPosition: common.Position{Offset: 0, Line: 0, Column: 0},
-		EndPosition:   common.Position{Offset: 0, Line: 0, Column: 0},
+	rootNode := Node{}
+	rootNode.Type = ROOT
+	if len(p.nodes) > 0 {
+		rootNode.StartPosition = p.nodes[0].StartPosition
+		rootNode.EndPosition = p.nodes[len(p.nodes)-1].EndPosition
 	}
+	// TODO: posssible bug?
 
 	for _, node := range p.nodes {
 		rootNode.AppendChild(node)

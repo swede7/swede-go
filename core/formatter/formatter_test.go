@@ -1,7 +1,6 @@
 package formatter
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,34 +8,42 @@ import (
 	"me.weldnor/swede/core/parser"
 )
 
-const code string = `
-       @all
-Feature:           Basic calculator operations
-
-
-# Comment example
+const code string = `@example 
+Feature:          calculator
 
 
 
+# comment
 
-     @pass              @automated
-Scenario:     Addition
-- Enter "2 + 2"
-
-- Click on calculation button
-
-
-- Check that the answer is "5"
-
-        @fail
-Scenario: Division by zero
-
-- Enter "5 / 0"
-- Click on calculation button
+@positive 
+Scenario: Test     addition
+-      Add "2" and "2"
+- Check that result is "4"
 
 
 
-- An exception must be thrown
+       @negative 
+Scenario: Test     addition? but result is not correct
+-                Add "2" and "2"
+
+
+- Check that result is "5"
+`
+
+const formattedCode string = `@example 
+Feature: calculator
+
+# comment
+
+@positive 
+Scenario: Test     addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative 
+Scenario: Test     addition? but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
 
 `
 
@@ -47,8 +54,6 @@ func TestFormatter_FormatParallel(t *testing.T) {
 	rootNode := parser.Parse().RootNode
 	formatter := NewFormatter(&rootNode)
 
-	formattedCode, err := formatter.FormatParallel()
-	assert.Nil(t, err)
-
-	fmt.Print(formattedCode)
+	result, _ := formatter.FormatParallel()
+	assert.Equal(t, formattedCode, result)
 }

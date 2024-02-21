@@ -1,9 +1,7 @@
 package lsp
 
 import (
-	"log"
-	"net/url"
-	"os"
+	"strings"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -33,11 +31,32 @@ func (l *LspServer) Start() {
 	// commonlog.Configure(1, nil)
 
 	handler = protocol.Handler{
-		Initialize:             initialize,
-		Initialized:            initialized,
-		Shutdown:               shutdown,
-		SetTrace:               setTrace,
-		TextDocumentFormatting: textDocumentFormatting,
+		Initialize:                     initialize,
+		Initialized:                    initialized,
+		Shutdown:                       shutdown,
+		SetTrace:                       setTrace,
+		TextDocumentFormatting:         textDocumentFormatting,
+		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
+		TextDocumentDidOpen: func(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+			CODE = params.TextDocument.Text
+			return nil
+		},
+		TextDocumentDidSave: func(context *glsp.Context, params *protocol.DidSaveTextDocumentParams) error { return nil },
+		TextDocumentDidChange: func(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
+			var event, ok = params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
+			if ok {
+				CODE = event.Text
+				return nil
+			}
+
+			var event1, ok1 = params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
+			if ok1 {
+				CODE = event1.Text
+				return nil
+			}
+
+			panic("oops")
+		},
 	}
 
 	server := server.NewServer(&handler, lsName, false)
@@ -48,7 +67,12 @@ func (l *LspServer) Start() {
 func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, error) {
 	capabilities := handler.CreateServerCapabilities()
 	capabilities.DocumentFormattingProvider = true
-
+	capabilities.SemanticTokensProvider = protocol.SemanticTokensOptions{
+		Full:   true,
+		Legend: protocol.SemanticTokensLegend{TokenTypes: []string{"comment", "string", "keyword", "parameter"}},
+		Range:  false,
+	}
+	capabilities.TextDocumentSync = 1
 	return protocol.InitializeResult{
 		Capabilities: capabilities,
 		ServerInfo: &protocol.InitializeResultServerInfo{
@@ -73,15 +97,7 @@ func setTrace(context *glsp.Context, params *protocol.SetTraceParams) error {
 }
 
 func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentFormattingParams) ([]protocol.TextEdit, error) {
-	uri := params.TextDocument.URI
-	filepath := uriToFilePath(uri)
-	dat, err := os.ReadFile(filepath)
-
-	if err != nil {
-		panic("oops: failed to read " + filepath + err.Error())
-	}
-
-	code := string(dat)
+	code := CODE
 
 	lexer := lexer.NewLexer(code)
 	parser := parser.NewParser(lexer.Scan())
@@ -90,8 +106,6 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 	if len(parserResult.Errors) > 0 {
 		return []protocol.TextEdit{}, nil
 	}
-
-	rootNode := parserResult.RootNode
 
 	formatter := formatter.NewFormatter(&parserResult.RootNode)
 	formattedCode, err := formatter.FormatParallel()
@@ -103,12 +117,12 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 	textEdit := protocol.TextEdit{
 		Range: protocol.Range{
 			Start: protocol.Position{
-				Line:      uint32(rootNode.StartPosition.Line),
-				Character: uint32(rootNode.StartPosition.Column),
+				Line:      0,
+				Character: 0,
 			},
 			End: protocol.Position{
-				Line:      uint32(rootNode.EndPosition.Line),
-				Character: uint32(rootNode.StartPosition.Column),
+				Line:      uint32(strings.Count(code, "\n") + 2),
+				Character: 0,
 			},
 		},
 		NewText: formattedCode,
@@ -117,17 +131,15 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 	return []protocol.TextEdit{textEdit}, nil
 }
 
-func uriToFilePath(uri string) string {
-	// Parse the URI
-	parsedURI, err := url.Parse(uri)
-	if err != nil {
-		log.Fatal(err)
-	}
+func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
+	code := CODE
 
-	// Check if the scheme is 'file'
-	if parsedURI.Scheme != "file" {
-		log.Fatal("The provided URI does not have a file scheme.")
-	}
+	lexer := lexer.NewLexer(string(code))
+	lexemes := lexer.Scan()
 
-	return parsedURI.Path[1:]
+	parserResult := parser.NewParser(lexemes).Parse()
+
+	semanticTokens := highlight(&parserResult.RootNode)
+
+	return semanticTokens, nil
 }
