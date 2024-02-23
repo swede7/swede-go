@@ -46,12 +46,14 @@ func (l *LspServer) Start() {
 			event, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
 			if ok {
 				CODE = event.Text
+
 				return nil
 			}
 
 			event1, ok1 := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
 			if ok1 {
 				CODE = event1.Text
+
 				return nil
 			}
 
@@ -73,6 +75,7 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 		Range:  false,
 	}
 	capabilities.TextDocumentSync = 1
+
 	return protocol.InitializeResult{
 		Capabilities: capabilities,
 		ServerInfo: &protocol.InitializeResultServerInfo{

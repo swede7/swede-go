@@ -41,6 +41,7 @@ func formatFilesParallel(paths []string) {
 
 	for range len(paths) {
 		var status string = <-statusChan
+
 		fmt.Println(status)
 	}
 }
@@ -61,11 +62,13 @@ func formatFile(path string) error {
 
 	_formatter := formatter.NewFormatter(&parserResult.RootNode)
 	formattedCode, err := _formatter.FormatParallel()
+
 	if err != nil {
 		return err
 	}
 
 	os.WriteFile(path, []byte(formattedCode), 0o644)
+
 	return nil
 }
 

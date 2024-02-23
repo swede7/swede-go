@@ -87,6 +87,7 @@ func (p *Parser) Parse() ParserResult {
 				break
 			}
 		}
+
 		if !anyRuleWasApplied {
 			break
 		}
@@ -94,10 +95,12 @@ func (p *Parser) Parse() ParserResult {
 
 	rootNode := Node{}
 	rootNode.Type = ROOT
+
 	if len(p.nodes) > 0 {
 		rootNode.StartPosition = p.nodes[0].StartPosition
 		rootNode.EndPosition = p.nodes[len(p.nodes)-1].EndPosition
 	}
+
 	// TODO: posssible bug?
 
 	for _, node := range p.nodes {
@@ -119,8 +122,10 @@ func skipSpacesAndNlRule(p *Parser) bool {
 
 	if p.peekLexeme().Type == lexer.SPACE || p.peekLexeme().Type == lexer.NL {
 		p.advance(1)
+
 		return true
 	}
+
 	return false
 }
 
@@ -153,6 +158,7 @@ func tagRule(p *Parser) bool {
 
 	p.addNode(tagNode)
 	p.advance(2)
+
 	return true
 }
 
@@ -346,9 +352,11 @@ func handleUnexpectedNodesRule(p *Parser) bool {
 	for i, node := range p.nodes {
 		if _, ok := validNodeTypes[node.Type]; !ok {
 			wrapperNode := Node{Type: UNEXPECTED, StartPosition: node.StartPosition, EndPosition: node.EndPosition, Value: node.Value}
+
 			wrapperNode.AppendChild(node)
 			p.nodes[i] = &wrapperNode
 			p.addError(node.StartPosition, node.EndPosition, "unexpected node")
+
 			someNodesWasProcessed = true
 		}
 	}

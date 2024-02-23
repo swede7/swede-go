@@ -1,9 +1,10 @@
-package formatter
+package formatter_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"me.weldnor/swede/core/formatter"
 	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 )
@@ -52,7 +53,7 @@ func TestFormatter_FormatParallel(t *testing.T) {
 	parser := parser.NewParser(lexer.Scan())
 
 	rootNode := parser.Parse().RootNode
-	formatter := NewFormatter(&rootNode)
+	formatter := formatter.NewFormatter(&rootNode)
 
 	result, _ := formatter.FormatParallel()
 	assert.Equal(t, formattedCode, result)

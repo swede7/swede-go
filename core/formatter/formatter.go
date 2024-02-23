@@ -19,15 +19,19 @@ func NewFormatter(rootNode *parser.Node) *Formatter {
 
 func (f *Formatter) FormatParallel() (string, error) {
 	var wg sync.WaitGroup
+
 	results := make([]string, len(f.rootNode.Children))
 
 	for i, node := range f.rootNode.Children {
 		wg.Add(1)
+
 		go func(i int, node *parser.Node) {
 			defer wg.Done()
+
 			results[i] = f.formatNode(node)
 		}(i, node)
 	}
+
 	wg.Wait()
 
 	return strings.Join(results, ""), nil
@@ -55,6 +59,7 @@ func (f *Formatter) formatFeature(sb *strings.Builder, node *parser.Node) {
 	for _, tagNode := range tagNodes {
 		f.formatTag(sb, tagNode)
 	}
+
 	sb.WriteString("\n")
 
 	sb.WriteString("Feature: ")

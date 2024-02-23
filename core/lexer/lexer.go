@@ -32,6 +32,7 @@ func (l *Lexer) peek() uint8 {
 	if l.isAtEnd() {
 		return '\000'
 	}
+
 	return l.source[l.offset]
 }
 
@@ -39,10 +40,13 @@ func (l *Lexer) matchChar(expected uint8) bool {
 	if l.isAtEnd() {
 		return false
 	}
+
 	if l.peek() != expected {
 		return false
 	}
+
 	l.advance()
+
 	return true
 }
 
@@ -60,10 +64,13 @@ func (l *Lexer) matchString(expected string) bool {
 	for i := 0; i < len(expected); i++ {
 		if expected[i] != l.peek() {
 			l.setPosition(startPosition)
+
 			return false
 		}
+
 		l.advance()
 	}
+    
 	return true
 }
 
@@ -228,14 +235,18 @@ func scanNl(l *Lexer) bool {
 
 	if l.matchString("\r\n") {
 		l.addToken(NL, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, "\r\n")
+
 		l.line++
+
 		l.column = 0
 		return true
 	}
 
 	if l.matchString("\n") {
 		l.addToken(NL, startPosition, common.Position{Offset: l.offset - 1, Line: l.line, Column: l.column - 1}, "\n")
+
 		l.line++
+
 		l.column = 0
 		return true
 	}

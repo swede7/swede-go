@@ -1,4 +1,4 @@
-package linter
+package linter_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"me.weldnor/swede/core/lexer"
+	"me.weldnor/swede/core/linter"
 	"me.weldnor/swede/core/parser"
 )
 
@@ -17,7 +18,7 @@ func Test_emptyFeatureTextRule(t *testing.T) {
 
 	rootNode := parser.Parse().RootNode
 
-	linter := NewLinter(&rootNode)
+	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()
 
 	fmt.Print(errors)
@@ -33,7 +34,7 @@ func Test_emptyScenarioTextRule(t *testing.T) {
 
 	rootNode := parser.Parse().RootNode
 
-	linter := NewLinter(&rootNode)
+	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()
 
 	fmt.Print(errors)
@@ -49,7 +50,7 @@ func Test_featureNodeInAnotherPosition(t *testing.T) {
 
 	rootNode := parser.Parse().RootNode
 
-	linter := NewLinter(&rootNode)
+	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()
 
 	fmt.Print(errors)

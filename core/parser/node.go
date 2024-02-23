@@ -40,11 +40,13 @@ func (node *Node) GetChildrenByType(nodeType NodeType) []*Node {
 			result = append(result, child)
 		}
 	}
+
 	return result
 }
 
 func (node *Node) GetChildByType(nodeType NodeType) *Node {
 	children := node.GetChildrenByType(nodeType)
+
 	return children[0]
 }
 
