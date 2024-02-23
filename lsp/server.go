@@ -1,17 +1,15 @@
 package lsp
 
 import (
-	"strings"
-
 	// Must include a backend implementation
 	// See CommonLog for other options: https://github.com/tliron/commonlog
 	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"github.com/tliron/glsp/server"
-	"me.weldnor/swede/core/formatter"
-	"me.weldnor/swede/core/lexer"
-	"me.weldnor/swede/core/parser"
+	"me.weldnor/swede/lsp/context"
+	"me.weldnor/swede/lsp/format"
+	"me.weldnor/swede/lsp/highlight"
 )
 
 const lsName = "swede"
@@ -28,8 +26,6 @@ func NewLspServer() *LspServer {
 }
 
 func (l *LspServer) Start() {
-	// commonlog.Configure(1, nil)
-
 	handler = protocol.Handler{
 		Initialize:                     initialize,
 		Initialized:                    initialized,
@@ -37,33 +33,42 @@ func (l *LspServer) Start() {
 		SetTrace:                       setTrace,
 		TextDocumentFormatting:         textDocumentFormatting,
 		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
-		TextDocumentDidOpen: func(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
-			CODE = params.TextDocument.Text
-			return nil
-		},
-		TextDocumentDidSave: func(context *glsp.Context, params *protocol.DidSaveTextDocumentParams) error { return nil },
-		TextDocumentDidChange: func(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
-			event, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
-			if ok {
-				CODE = event.Text
-
-				return nil
-			}
-
-			event1, ok1 := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
-			if ok1 {
-				CODE = event1.Text
-
-				return nil
-			}
-
-			panic("oops")
-		},
+		TextDocumentDidOpen:            textDocumentDidOpen,
+		TextDocumentDidSave:            textDocumentDidSave,
+		TextDocumentDidChange:          TextDocumentDidChange,
 	}
-
 	server := server.NewServer(&handler, lsName, false)
 
 	server.RunStdio()
+}
+
+func textDocumentDidSave(context *glsp.Context, params *protocol.DidSaveTextDocumentParams) error {
+	return nil
+}
+
+func TextDocumentDidChange(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
+	contentChangeEvent, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
+
+	if ok {
+		updateCode(contentChangeEvent.Text)
+
+		return nil
+	}
+
+	ContentChangeEventWhole, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
+	if ok {
+		updateCode(ContentChangeEventWhole.Text)
+
+		return nil
+	}
+
+	panic("can't process documentDidChange event")
+}
+
+func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	updateCode(params.TextDocument.Text)
+
+	return nil
 }
 
 func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, error) {
@@ -91,57 +96,28 @@ func initialized(context *glsp.Context, params *protocol.InitializedParams) erro
 
 func shutdown(context *glsp.Context) error {
 	protocol.SetTraceValue(protocol.TraceValueOff)
+
 	return nil
 }
 
 func setTrace(context *glsp.Context, params *protocol.SetTraceParams) error {
 	protocol.SetTraceValue(params.Value)
+
 	return nil
 }
 
 func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentFormattingParams) ([]protocol.TextEdit, error) {
-	code := CODE
-
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
-	parserResult := parser.Parse()
-
-	if len(parserResult.Errors) > 0 {
-		return []protocol.TextEdit{}, nil
-	}
-
-	formatter := formatter.NewFormatter(&parserResult.RootNode)
-	formattedCode, err := formatter.FormatParallel()
-	if err != nil {
-		panic("oops: failed to format code")
-	}
-
-	textEdit := protocol.TextEdit{
-		Range: protocol.Range{
-			Start: protocol.Position{
-				Line:      0,
-				Character: 0,
-			},
-			End: protocol.Position{
-				Line:      uint32(strings.Count(code, "\n") + 2),
-				Character: 0,
-			},
-		},
-		NewText: formattedCode,
-	}
-
-	return []protocol.TextEdit{textEdit}, nil
+	return format.Format()
 }
 
 func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
-	code := CODE
+	return highlight.Highlight()
+}
 
-	lexer := lexer.NewLexer(string(code))
-	lexemes := lexer.Scan()
+func updateCode(newCode string) {
+	context.GetContext().Code = newCode
+}
 
-	parserResult := parser.NewParser(lexemes).Parse()
-
-	semanticTokens := highlight(&parserResult.RootNode)
-
-	return semanticTokens, nil
+func getCode() string {
+	return context.GetContext().Code
 }

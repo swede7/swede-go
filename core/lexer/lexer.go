@@ -70,7 +70,7 @@ func (l *Lexer) matchString(expected string) bool {
 
 		l.advance()
 	}
-    
+
 	return true
 }
 
