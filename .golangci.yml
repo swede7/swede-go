@@ -1,0 +1,4 @@
+# Options for analysis running.
+linters:
+  # See the dedicated "linters" documentation section.
+  enable-all: true
