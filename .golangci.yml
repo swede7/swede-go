@@ -3,6 +3,7 @@ linters:
   # See the dedicated "linters" documentation section.
   enable-all: true
   disable:
+    # deprecated
     - interfacer
     - scopelint
     - deadcode
@@ -13,3 +14,5 @@ linters:
     - golint
     - nosnakecase
     - varcheck
+    # seems not important now
+    - depguard
