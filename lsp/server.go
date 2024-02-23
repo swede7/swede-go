@@ -3,25 +3,25 @@ package lsp
 import (
 	"strings"
 
+	// Must include a backend implementation
+	// See CommonLog for other options: https://github.com/tliron/commonlog
+	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"github.com/tliron/glsp/server"
 	"me.weldnor/swede/core/formatter"
 	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
-
-	// Must include a backend implementation
-	// See CommonLog for other options: https://github.com/tliron/commonlog
-	_ "github.com/tliron/commonlog/simple"
 )
 
 const lsName = "swede"
 
-var version string = "0.0.1"
-var handler protocol.Handler
+var (
+	version string = "0.0.1"
+	handler protocol.Handler
+)
 
-type LspServer struct {
-}
+type LspServer struct{}
 
 func NewLspServer() *LspServer {
 	return &LspServer{}
@@ -43,13 +43,13 @@ func (l *LspServer) Start() {
 		},
 		TextDocumentDidSave: func(context *glsp.Context, params *protocol.DidSaveTextDocumentParams) error { return nil },
 		TextDocumentDidChange: func(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
-			var event, ok = params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
+			event, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
 			if ok {
 				CODE = event.Text
 				return nil
 			}
 
-			var event1, ok1 = params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
+			event1, ok1 := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
 			if ok1 {
 				CODE = event1.Text
 				return nil
@@ -109,7 +109,6 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 
 	formatter := formatter.NewFormatter(&parserResult.RootNode)
 	formattedCode, err := formatter.FormatParallel()
-
 	if err != nil {
 		panic("oops: failed to format code")
 	}

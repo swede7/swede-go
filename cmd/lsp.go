@@ -7,7 +7,7 @@ import (
 
 var stdioFlag bool
 
-// lspCmd represents the lsp command
+// lspCmd represents the lsp command.
 var lspCmd = &cobra.Command{
 	Use:   "lsp",
 	Short: "Start lsp server",

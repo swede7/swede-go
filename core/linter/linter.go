@@ -65,21 +65,20 @@ func emptyFeatureTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
 	parser.VisitNode(l.rootNode, func(n *parser.Node) {
-
 		if n.Type != parser.FEATURE {
 			return
 		}
 
 		if strings.TrimSpace(n.Value) == "" {
-			e := LinterError{StartPosition: n.StartPosition,
-				EndPosition: n.EndPosition,
-				Message:     "Feature name is empty",
-				Severity:    WARN,
+			e := LinterError{
+				StartPosition: n.StartPosition,
+				EndPosition:   n.EndPosition,
+				Message:       "Feature name is empty",
+				Severity:      WARN,
 			}
 
 			foundedErrors = append(foundedErrors, e)
 		}
-
 	})
 
 	return foundedErrors
@@ -89,21 +88,20 @@ func emptyScenarioTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
 	parser.VisitNode(l.rootNode, func(n *parser.Node) {
-
 		if n.Type != parser.SCENARIO {
 			return
 		}
 
 		if strings.TrimSpace(n.Value) == "" {
-			e := LinterError{StartPosition: n.StartPosition,
-				EndPosition: n.EndPosition,
-				Message:     "Scenario name is empty",
-				Severity:    WARN,
+			e := LinterError{
+				StartPosition: n.StartPosition,
+				EndPosition:   n.EndPosition,
+				Message:       "Scenario name is empty",
+				Severity:      WARN,
 			}
 
 			foundedErrors = append(foundedErrors, e)
 		}
-
 	})
 
 	return foundedErrors
@@ -113,21 +111,20 @@ func emptyStepTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
 	parser.VisitNode(l.rootNode, func(n *parser.Node) {
-
 		if n.Type != parser.STEP {
 			return
 		}
 
 		if strings.TrimSpace(n.Value) == "" {
-			e := LinterError{StartPosition: n.StartPosition,
-				EndPosition: n.EndPosition,
-				Message:     "Step text is empty",
-				Severity:    WARN,
+			e := LinterError{
+				StartPosition: n.StartPosition,
+				EndPosition:   n.EndPosition,
+				Message:       "Step text is empty",
+				Severity:      WARN,
 			}
 
 			foundedErrors = append(foundedErrors, e)
 		}
-
 	})
 
 	return foundedErrors
@@ -138,16 +135,16 @@ func featureNodeInAnotherPosition(l *Linter) []LinterError {
 
 	for _, node := range l.rootNode.Children {
 		if node.Type == parser.UNEXPECTED {
-			continue //skip errors
 		}
 
 		if node.Type == parser.FEATURE {
 			break // ok
 		} else {
-			e := LinterError{StartPosition: node.StartPosition,
-				EndPosition: node.EndPosition,
-				Message:     "Scenario should be declared on first position",
-				Severity:    WARN,
+			e := LinterError{
+				StartPosition: node.StartPosition,
+				EndPosition:   node.EndPosition,
+				Message:       "Scenario should be declared on first position",
+				Severity:      WARN,
 			}
 
 			foundedErrors = append(foundedErrors, e)

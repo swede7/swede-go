@@ -148,12 +148,14 @@ func tagRule(p *Parser) bool {
 		Type:          TAG,
 		StartPosition: atLexeme.StartPosition,
 		EndPosition:   wordLexeme.EndPosition,
-		Value:         wordLexeme.Value}
+		Value:         wordLexeme.Value,
+	}
 
 	p.addNode(tagNode)
 	p.advance(2)
 	return true
 }
+
 func commentRule(p *Parser) bool {
 	if p.isEof() {
 		return false
@@ -178,7 +180,8 @@ func commentRule(p *Parser) bool {
 		Type:          COMMENT,
 		StartPosition: hashLexeme.StartPosition,
 		EndPosition:   p.peekLexeme().EndPosition,
-		Value:         sb.String()}
+		Value:         sb.String(),
+	}
 
 	p.addNode(commentNode)
 	return true
@@ -249,7 +252,8 @@ func scenarioRule(p *Parser) bool {
 		Type:          SCENARIO,
 		StartPosition: scenarioWordLexeme.StartPosition,
 		EndPosition:   p.getPreviousLexeme().EndPosition,
-		Value:         sb.String()}
+		Value:         sb.String(),
+	}
 
 	p.addNode(featureNode)
 	return true

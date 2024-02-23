@@ -30,11 +30,10 @@ Scenario: Division by zero
 `
 
 func TestLexerForCodeExample(t *testing.T) {
-
 	lexer := NewLexer(code)
 	lexemes := lexer.Scan()
 
-	var expectedLexemes = []Lexeme{
+	expectedLexemes := []Lexeme{
 		{AT_CHR, common.Position{Offset: 1, Line: 1, Column: 0}, common.Position{Offset: 1, Line: 1, Column: 0}, "@"},
 		{WORD, common.Position{Offset: 2, Line: 1, Column: 1}, common.Position{Offset: 4, Line: 1, Column: 3}, "all"},
 	}
@@ -42,5 +41,4 @@ func TestLexerForCodeExample(t *testing.T) {
 	for _, expectedLexeme := range expectedLexemes {
 		assert.Contains(t, lexemes, expectedLexeme)
 	}
-
 }

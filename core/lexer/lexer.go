@@ -59,7 +59,6 @@ func (l *Lexer) matchString(expected string) bool {
 
 	for i := 0; i < len(expected); i++ {
 		if expected[i] != l.peek() {
-			//rollback
 			l.setPosition(startPosition)
 			return false
 		}

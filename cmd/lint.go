@@ -15,7 +15,7 @@ import (
 	"me.weldnor/swede/core/parser"
 )
 
-// lintCmd represents the lint command
+// lintCmd represents the lint command.
 var lintCmd = &cobra.Command{
 	Use:   "lint",
 	Short: "Lint one or more files",
@@ -55,7 +55,6 @@ func lintFilesParallel(paths []string) {
 			for _, linterError := range linterErrors {
 				fmt.Printf("%s [%d:%d] %s\n", linterError.Severity, linterError.StartPosition.Line+1, linterError.StartPosition.Column+1, linterError.Message)
 			}
-
 		}()
 	}
 
@@ -64,7 +63,6 @@ func lintFilesParallel(paths []string) {
 
 func lintFile(path string, mutex *sync.Mutex) ([]linter.LinterError, error) {
 	code, err := os.ReadFile(path)
-
 	if err != nil {
 		return nil, errors.New("cant read file" + path)
 	}

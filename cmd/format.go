@@ -14,7 +14,7 @@ import (
 	"me.weldnor/swede/core/parser"
 )
 
-// formatCmd represents the format command
+// formatCmd represents the format command.
 var formatCmd = &cobra.Command{
 	Use:   "format",
 	Short: "Format one or more files",
@@ -33,7 +33,6 @@ func formatFilesParallel(paths []string) {
 
 			if err != nil {
 				statusChan <- "can`t format file" + path
-
 			} else {
 				statusChan <- "file " + path + " formatted successfully"
 			}
@@ -44,12 +43,10 @@ func formatFilesParallel(paths []string) {
 		var status string = <-statusChan
 		fmt.Println(status)
 	}
-
 }
 
 func formatFile(path string) error {
 	code, err := os.ReadFile(path)
-
 	if err != nil {
 		return errors.New("cant read file: " + path)
 	}
@@ -64,12 +61,11 @@ func formatFile(path string) error {
 
 	_formatter := formatter.NewFormatter(&parserResult.RootNode)
 	formattedCode, err := _formatter.FormatParallel()
-
 	if err != nil {
 		return err
 	}
 
-	os.WriteFile(path, []byte(formattedCode), 0644)
+	os.WriteFile(path, []byte(formattedCode), 0o644)
 	return nil
 }
 

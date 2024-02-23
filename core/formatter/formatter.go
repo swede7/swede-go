@@ -60,7 +60,6 @@ func (f *Formatter) formatFeature(sb *strings.Builder, node *parser.Node) {
 	sb.WriteString("Feature: ")
 	sb.WriteString(strings.TrimSpace(node.Value))
 	sb.WriteString("\n\n")
-
 }
 
 func (f *Formatter) formatTag(sb *strings.Builder, node *parser.Node) {
@@ -87,7 +86,6 @@ func (f *Formatter) formatScenario(sb *strings.Builder, node *parser.Node) {
 		f.formatStep(sb, stepNode)
 	}
 	sb.WriteString("\n")
-
 }
 
 func (f *Formatter) formatStep(sb *strings.Builder, node *parser.Node) {
