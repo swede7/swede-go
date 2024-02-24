@@ -3,7 +3,6 @@ package highlight
 import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"me.weldnor/swede/core/common"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 	"me.weldnor/swede/lsp/context"
 )
@@ -25,11 +24,7 @@ const (
 func Highlight() (*protocol.SemanticTokens, error) {
 	code := context.GetContext().Code
 
-	lexer := lexer.NewLexer(code)
-	lexemes := lexer.Scan()
-
-	parser := parser.NewParser(lexemes)
-	parserResult := parser.Parse()
+	parserResult := parser.ParseCode(code)
 
 	return getSemanticTokensByAst(&parserResult.RootNode), nil
 }

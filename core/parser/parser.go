@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"os"
 	"strings"
 
 	"me.weldnor/swede/core/common"
@@ -19,10 +20,62 @@ type ParserResult struct {
 	Errors   []Error
 }
 
-func NewParser(lexemes []lexer.Lexeme) *Parser {
-	return &Parser{
-		lexemes: lexemes,
+func ParseFile(path string) ParserResult {
+	bytes, err := os.ReadFile(path)
+
+	if err != nil {
+		panic("can't read file " + path)
 	}
+
+	code := string(bytes)
+
+	return ParseCode(code)
+}
+
+func ParseCode(code string) ParserResult {
+	lexer := lexer.NewLexer(code)
+	lexemes := lexer.Scan()
+
+	parser := new(Parser)
+	parser.lexemes = lexemes
+
+	return parser.parse()
+}
+
+func (p *Parser) parse() ParserResult {
+	for {
+		anyRuleWasApplied := false
+
+		for _, rule := range parseRules {
+			if rule(p) {
+				anyRuleWasApplied = true
+				break
+			}
+		}
+
+		if !anyRuleWasApplied {
+			break
+		}
+	}
+
+	rootNode := Node{}
+	rootNode.Type = ROOT
+
+	if len(p.nodes) > 0 {
+		rootNode.StartPosition = p.nodes[0].StartPosition
+		rootNode.EndPosition = p.nodes[len(p.nodes)-1].EndPosition
+	}
+
+	for _, node := range p.nodes {
+		rootNode.AppendChild(node)
+		rootNode.EndPosition = node.EndPosition
+	}
+
+	parserResult := ParserResult{}
+	parserResult.Errors = p.errors
+	parserResult.RootNode = rootNode
+
+	return parserResult
 }
 
 func (p *Parser) peekLexeme() lexer.Lexeme {
@@ -75,44 +128,6 @@ var parseRules []parseRule = []parseRule{
 	stepRule,
 	handleUnexpectedLexemeRule,
 	handleUnexpectedNodesRule,
-}
-
-func (p *Parser) Parse() ParserResult {
-	for {
-		anyRuleWasApplied := false
-
-		for _, rule := range parseRules {
-			if rule(p) {
-				anyRuleWasApplied = true
-				break
-			}
-		}
-
-		if !anyRuleWasApplied {
-			break
-		}
-	}
-
-	rootNode := Node{}
-	rootNode.Type = ROOT
-
-	if len(p.nodes) > 0 {
-		rootNode.StartPosition = p.nodes[0].StartPosition
-		rootNode.EndPosition = p.nodes[len(p.nodes)-1].EndPosition
-	}
-
-	// TODO: posssible bug?
-
-	for _, node := range p.nodes {
-		rootNode.AppendChild(node)
-		rootNode.EndPosition = node.EndPosition
-	}
-
-	parserResult := ParserResult{}
-	parserResult.Errors = p.errors
-	parserResult.RootNode = rootNode
-
-	return parserResult
 }
 
 func skipSpacesAndNlRule(p *Parser) bool {
@@ -246,6 +261,7 @@ func scenarioRule(p *Parser) bool {
 	scenarioWordLexeme := p.peekLexeme()
 
 	sb := strings.Builder{}
+
 	p.advance(1)
 
 	for !p.isEof() && p.peekLexeme().Type != lexer.NL {

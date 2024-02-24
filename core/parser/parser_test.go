@@ -1,11 +1,11 @@
-package parser
+package parser_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lexer"
+	"me.weldnor/swede/core/parser"
 )
 
 const code string = `
@@ -28,35 +28,27 @@ Scenario: Division by zero
 `
 
 func TestParserWithValidCode(t *testing.T) {
-	lexer := lexer.NewLexer(code)
-	lexemes := lexer.Scan()
+	parserResult := parser.ParseCode(code)
 
-	parser := NewParser(lexemes)
-	result := parser.Parse()
-
-	fmt.Print(result.RootNode)
-	fmt.Print(result.Errors)
+	fmt.Print(parserResult.RootNode)
+	fmt.Print(parserResult.Errors)
 }
 
 func TestParserAddTagToFeatureRule(t *testing.T) {
-	lexer := lexer.NewLexer("@example\nFeature: hello world")
-	lexemes := lexer.Scan()
+	parserResult := parser.ParseCode("@example\nFeature: hello world")
 
-	parser := NewParser(lexemes)
-	result := parser.Parse()
+	assert.Empty(t, parserResult.Errors)
 
-	assert.Empty(t, result.Errors)
-
-	rootNode := result.RootNode
+	rootNode := parserResult.RootNode
 	assert.NotNil(t, rootNode)
 
 	assert.Len(t, rootNode.Children, 1)
 
-	assert.Equal(t, FEATURE, rootNode.Children[0].Type)
+	assert.Equal(t, parser.FEATURE, rootNode.Children[0].Type)
 
 	featureNode := rootNode.Children[0]
 
 	assert.Len(t, featureNode.Children, 1)
 
-	assert.Equal(t, TAG, featureNode.Children[0].Type)
+	assert.Equal(t, parser.TAG, featureNode.Children[0].Type)
 }

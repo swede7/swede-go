@@ -6,11 +6,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/spf13/cobra"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/linter"
 	"me.weldnor/swede/core/parser"
 )
@@ -62,14 +60,7 @@ func lintFilesParallel(paths []string) {
 }
 
 func lintFile(path string, mutex *sync.Mutex) ([]linter.LinterError, error) {
-	code, err := os.ReadFile(path)
-	if err != nil {
-		return nil, errors.New("cant read file" + path)
-	}
-
-	lexer := lexer.NewLexer(string(code))
-	parser := parser.NewParser(lexer.Scan())
-	parserResult := parser.Parse()
+	parserResult := parser.ParseFile(path)
 
 	if len(parserResult.Errors) > 0 {
 		return nil, errors.New("found errors while parsing file: " + path)

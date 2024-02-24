@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/linter"
 	"me.weldnor/swede/core/parser"
 )
@@ -13,10 +12,9 @@ import (
 func Test_emptyFeatureTextRule(t *testing.T) {
 	code := "@tag1 @tag2\nFeature:\n\n"
 
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
+	parserResult := parser.ParseCode(code)
 
-	rootNode := parser.Parse().RootNode
+	rootNode := parserResult.RootNode
 
 	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()
@@ -29,10 +27,9 @@ func Test_emptyFeatureTextRule(t *testing.T) {
 func Test_emptyScenarioTextRule(t *testing.T) {
 	code := "@tag1 @tag2\nFeature: example\n\nScenario:\n\n"
 
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
+	parserResult := parser.ParseCode(code)
 
-	rootNode := parser.Parse().RootNode
+	rootNode := parserResult.RootNode
 
 	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()
@@ -45,10 +42,9 @@ func Test_emptyScenarioTextRule(t *testing.T) {
 func Test_featureNodeInAnotherPosition(t *testing.T) {
 	code := "Scenario:example scenario\n- step1\n\nFeature: example\n"
 
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
+	parserResult := parser.ParseCode(code)
 
-	rootNode := parser.Parse().RootNode
+	rootNode := parserResult.RootNode
 
 	linter := linter.NewLinter(&rootNode)
 	errors := linter.Lint()

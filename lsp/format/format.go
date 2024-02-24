@@ -6,7 +6,6 @@ import (
 
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"me.weldnor/swede/core/formatter"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 	"me.weldnor/swede/lsp/context"
 )
@@ -14,9 +13,7 @@ import (
 func Format() ([]protocol.TextEdit, error) {
 	code := context.GetContext().Code
 
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
-	parserResult := parser.Parse()
+	parserResult := parser.ParseCode(code)
 
 	if len(parserResult.Errors) > 0 {
 		return nil, errors.New("can't parse file")

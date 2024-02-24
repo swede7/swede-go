@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"me.weldnor/swede/core/formatter"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 )
 
@@ -47,14 +46,7 @@ func formatFilesParallel(paths []string) {
 }
 
 func formatFile(path string) error {
-	code, err := os.ReadFile(path)
-	if err != nil {
-		return errors.New("cant read file: " + path)
-	}
-
-	lexer := lexer.NewLexer(string(code))
-	parser := parser.NewParser(lexer.Scan())
-	parserResult := parser.Parse()
+	parserResult := parser.ParseFile(path)
 
 	if len(parserResult.Errors) > 0 {
 		return errors.New("found errors while parsing file: " + path)

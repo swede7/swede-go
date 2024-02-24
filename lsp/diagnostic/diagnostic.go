@@ -2,7 +2,6 @@ package diagnostic
 
 import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 	"me.weldnor/swede/lsp/context"
 )
@@ -10,9 +9,7 @@ import (
 func Diagnostic() []protocol.Diagnostic {
 	code := context.GetContext().Code
 
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
-	parserResult := parser.Parse()
+	parserResult := parser.ParseCode(code)
 
 	diagnostics := make([]protocol.Diagnostic, 0)
 

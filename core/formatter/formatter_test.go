@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"me.weldnor/swede/core/formatter"
-	"me.weldnor/swede/core/lexer"
 	"me.weldnor/swede/core/parser"
 )
 
@@ -49,10 +48,9 @@ Scenario: Test     addition? but result is not correct
 `
 
 func TestFormatter_FormatParallel(t *testing.T) {
-	lexer := lexer.NewLexer(code)
-	parser := parser.NewParser(lexer.Scan())
+	parserResult := parser.ParseCode(code)
 
-	rootNode := parser.Parse().RootNode
+	rootNode := parserResult.RootNode
 	formatter := formatter.NewFormatter(&rootNode)
 
 	result, _ := formatter.FormatParallel()
