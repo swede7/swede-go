@@ -4,6 +4,7 @@ var instance *LspContext
 
 type LspContext struct {
 	Code string
+	URI  string
 }
 
 func GetContext() *LspContext {

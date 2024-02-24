@@ -3,11 +3,14 @@ package lsp
 import (
 	// Must include a backend implementation
 	// See CommonLog for other options: https://github.com/tliron/commonlog
+	"errors"
+
 	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"github.com/tliron/glsp/server"
 	"me.weldnor/swede/lsp/context"
+	"me.weldnor/swede/lsp/diagnostic"
 	"me.weldnor/swede/lsp/format"
 	"me.weldnor/swede/lsp/highlight"
 )
@@ -46,27 +49,25 @@ func textDocumentDidSave(context *glsp.Context, params *protocol.DidSaveTextDocu
 	return nil
 }
 
-func TextDocumentDidChange(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
-	contentChangeEvent, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEvent)
-
-	if ok {
-		updateCode(contentChangeEvent.Text)
-
-		return nil
-	}
-
+func TextDocumentDidChange(ctx *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
 	ContentChangeEventWhole, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
-	if ok {
-		updateCode(ContentChangeEventWhole.Text)
-
-		return nil
+	if !ok {
+		panic(errors.New("cant process document did change error"))
 	}
 
-	panic("can't process documentDidChange event")
+	context.GetContext().Code = ContentChangeEventWhole.Text
+	context.GetContext().URI = params.TextDocument.URI
+
+	publishDiagnostic(ctx.Notify)
+
+	return nil
 }
 
-func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
-	updateCode(params.TextDocument.Text)
+func textDocumentDidOpen(ctx *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	context.GetContext().Code = params.TextDocument.Text
+	context.GetContext().URI = params.TextDocument.URI
+
+	publishDiagnostic(ctx.Notify)
 
 	return nil
 }
@@ -112,6 +113,13 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 
 func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
 	return highlight.Highlight()
+}
+
+func publishDiagnostic(notifyFunc glsp.NotifyFunc) {
+	go notifyFunc(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
+		URI:         context.GetContext().URI,
+		Diagnostics: diagnostic.Diagnostic(),
+	})
 }
 
 func updateCode(newCode string) {
