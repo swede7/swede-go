@@ -2,7 +2,6 @@ package formatter
 
 import (
 	"strings"
-	"sync"
 
 	"me.weldnor/swede/core/parser"
 )
@@ -17,24 +16,44 @@ func NewFormatter(rootNode *parser.Node) *Formatter {
 	}
 }
 
-func (f *Formatter) FormatParallel() (string, error) {
-	var wg sync.WaitGroup
+func (f *Formatter) Format() string {
+	sb := strings.Builder{}
 
-	results := make([]string, len(f.rootNode.Children))
-
-	for i, node := range f.rootNode.Children {
-		wg.Add(1)
-
-		go func(i int, node *parser.Node) {
-			defer wg.Done()
-
-			results[i] = f.formatNode(node)
-		}(i, node)
+	for _, node := range f.rootNode.Children {
+		sb.WriteString(f.formatNode(node))
 	}
 
-	wg.Wait()
+	return sb.String()
+}
 
-	return strings.Join(results, ""), nil
+type formatJob struct {
+	node  *parser.Node
+	index int
+}
+
+func (f *Formatter) FormatParallel() (string, error) {
+	countOfNodes := len(f.rootNode.Children)
+
+	jobsChan := make(chan formatJob, countOfNodes)
+	result := make([]string, countOfNodes)
+
+	for i := 0; i < 4; i++ {
+		go func() {
+			for job := range jobsChan {
+				result[job.index] = f.formatNode(job.node)
+			}
+		}()
+	}
+
+	for i, node := range f.rootNode.Children {
+		jobsChan <- formatJob{
+			node:  node,
+			index: i,
+		}
+	}
+	close(jobsChan)
+
+	return strings.Join(result, ""), nil
 }
 
 func (f *Formatter) formatNode(node *parser.Node) string {

@@ -1,21 +1,259 @@
-   @example 
-Feature:          calculator
+@example 
+Feature: empty
 
-
-
-# comment          
+# comment
 
 @positive 
-Scenario: Test addition         
+Scenario: Test addition
 - Add "2" and "2"
+- Check that result is "4"
 
-- Check that result is "4"      
-
-
-
-      @negative 
-Scenario:              Test addition, but result is not correct        
+@negative @test 
+Scenario: Test addition, but result is not correct
 - Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
 
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+
+# comment
+
+@positive 
+Scenario: Test addition
+- Add "2" and "2"
+- Check that result is "4"
+
+@negative @test 
+Scenario: Test addition, but result is not correct
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
+- Check that result is "5"
+- Add "2" and "2"
 - Check that result is "5"
 

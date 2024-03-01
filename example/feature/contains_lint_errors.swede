@@ -1,15 +1,15 @@
 @example 
-Feature:
+Feature: 
 
 # comment
 
 @positive 
 Scenario: Test addition
--
+- 
 - Check that result is "4"
 
 @negative 
-Scenario:
+Scenario: 
 - Add "2" and "2"
 - Check that result is "5"
 
