@@ -6,6 +6,13 @@ import (
 	"me.weldnor/swede/runner"
 )
 
+//go:generate swede gen
+
+// swede:step
+func anotherFunc() {
+	// do nothing
+}
+
 func TestLexerForCodeExample(t *testing.T) {
 	_runner := runner.NewRunner()
 	_runner.LoadFeatureFile("./feature/formatted.swede")
