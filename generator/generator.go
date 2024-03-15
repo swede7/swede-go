@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/format"
 	"go/parser"
 	"go/token"
 	"os"
@@ -48,7 +49,36 @@ func (g *Generator) parseFile() {
 	g.astFile = astFile
 }
 
-func (g *Generator) getStepDefinitionFuncs() {
+func (g *Generator) Generate() {
+	g.findStepDefinitionFuncs()
+
+	runnerFuncDecl := g.findTestRunnerFuncDecl()
+	newRunnerFuncDecl := g.generateTestRunnerFuncDecl()
+
+	if runnerFuncDecl == nil {
+		g.insertTestRunnerFuncDecl(newRunnerFuncDecl)
+	} else {
+		fmt.Println("found test runner")
+		g.updateTestRunnerFuncDecl(newRunnerFuncDecl)
+	}
+
+	g.saveToFile()
+}
+
+func (g *Generator) saveToFile() {
+	outFile, err := os.OpenFile(g.filepath, os.O_WRONLY, 0666)
+	if err != nil {
+		panic("oops")
+	}
+	//Не забываем прибраться
+	defer outFile.Close()
+
+	if err := format.Node(outFile, g.fset, g.astFile); err != nil {
+		panic(err)
+	}
+}
+
+func (g *Generator) findStepDefinitionFuncs() {
 	for _, decl := range g.astFile.Decls {
 		funcDecl, ok := decl.(*ast.FuncDecl)
 		if !ok {
@@ -56,22 +86,11 @@ func (g *Generator) getStepDefinitionFuncs() {
 		}
 
 		fmt.Println("scanning function " + funcDecl.Name.String() + "...")
+
 		if g.checkFunction(funcDecl) {
 			fmt.Println("found step definition function: " + funcDecl.Name.String())
 		}
 	}
-
-	// fmt.Print("scanning comments...")
-	// commentGroups := g.astFile.Comments
-
-	// for _, commentGroup := range commentGroups {
-	// 	for _, comment := range commentGroup.List {
-	// 		if strings.Contains(comment.Text, "swede:step") {
-	// 			endPosition := g.fset.PositionFor(comment.End(), false) // todo second parameter?
-	// 			fmt.Println("found swede comment on pos " + endPosition.String())
-	// 		}
-	// 	}
-	// }
 }
 
 func (g *Generator) checkFunction(funcDecl *ast.FuncDecl) bool {
@@ -96,7 +115,82 @@ func checkComment(comment string) bool {
 	return false
 }
 
-func (g *Generator) Generate() {
+func (g *Generator) isTestRunnerFuncDecl(decl ast.Decl) bool {
+	funcDecl, ok := decl.(*ast.FuncDecl)
 
-	g.getStepDefinitionFuncs()
+	if !ok {
+		return false
+	}
+
+	return funcDecl.Name.String() == testRunnerFunctionName
+}
+
+func (g *Generator) insertTestRunnerFuncDecl(funcDecl *ast.FuncDecl) {
+	g.astFile.Decls = append(g.astFile.Decls, funcDecl)
+}
+
+func (g *Generator) updateTestRunnerFuncDecl(funcDecl *ast.FuncDecl) {
+	for i, decl := range g.astFile.Decls {
+		if g.isTestRunnerFuncDecl(decl) {
+			g.astFile.Decls[i] = funcDecl
+			return
+		}
+	}
+}
+
+const testRunnerFunctionName = "TestSwedeRunner"
+
+func (g *Generator) findTestRunnerFuncDecl() *ast.FuncDecl {
+	for _, decl := range g.astFile.Decls {
+		if g.isTestRunnerFuncDecl(decl) {
+			funcDecl, ok := decl.(*ast.FuncDecl)
+			if !ok {
+				panic("oops")
+			}
+
+			return funcDecl
+		}
+	}
+	return nil
+}
+
+const testRunnerTemplate = `
+package main
+
+import(
+    "testing"
+    "me.weldnor/swede/runner"
+)
+
+func TestSwedeRunner(t *testing.T) {
+    _runner := runner.NewRunner()
+	_runner.LoadFeatureFile("./feature/formatted.swede")
+}
+
+`
+
+func (g *Generator) generateTestRunnerFuncDecl() *ast.FuncDecl {
+
+	templateAst, err := parser.ParseFile(
+		token.NewFileSet(),
+		//Источник для парсинга лежит не в файле,
+		"",
+		[]byte(testRunnerTemplate),
+		parser.ParseComments,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(templateAst.Decls)
+
+	decl := templateAst.Decls[1] //skip import declaration
+	funcDecl, ok := decl.(*ast.FuncDecl)
+
+	if !ok {
+		panic("oops")
+	}
+
+	return funcDecl
 }
