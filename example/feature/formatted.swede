@@ -5,11 +5,11 @@ Feature: calculator
 
 @positive 
 Scenario: Test addition
-- Add "2" and "2"
-- Check that result is "4"
+- Add 2 and 2
+- Check that result is 4
 
 @negative 
 Scenario: Test addition, but result is not correct
-- Add "2" and "2"
-- Check that result is "5"
+- Add 2 and 2
+- Check that result is 5
 

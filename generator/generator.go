@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"go/ast"
@@ -8,49 +9,43 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
-	"path"
 	"strings"
+	"text/template"
+
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 type Generator struct {
 	filepath string
+
+	featureFiles []string
+
 	//parser data
 	fset    *token.FileSet
 	astFile *ast.File
+
+	stepDefinitions []stepDefinitionWithFuncName
 }
 
-func NewGenerator() *Generator {
-	g := &Generator{}
+type GeneratorOptions struct {
+	FeatureFiles []string
+}
 
-	g.filepath = getFilePath()
-	g.parseFile()
+func NewGenerator(options GeneratorOptions) *Generator {
+	g := &Generator{
+		featureFiles: options.FeatureFiles,
+	}
+
+	g.filepath = getProcessedFilePath()
+	g.parseSourceFile()
 
 	return g
 }
 
-func getFilePath() string {
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(errors.New("can't get current working directory"))
-	}
-
-	return path.Join(wd, os.Getenv("GOFILE"))
-}
-
-func (g *Generator) parseFile() {
-	g.fset = token.NewFileSet()
-
-	astFile, err := parser.ParseFile(g.fset, getFilePath(), nil, parser.ParseComments)
-
-	if err != nil {
-		panic(errors.New("can't parse file"))
-	}
-
-	g.astFile = astFile
-}
-
 func (g *Generator) Generate() {
-	g.findStepDefinitionFuncs()
+	g.stepDefinitions = g.findStepDefinitionFuncs()
+
+	fmt.Println(g.stepDefinitions)
 
 	runnerFuncDecl := g.findTestRunnerFuncDecl()
 	newRunnerFuncDecl := g.generateTestRunnerFuncDecl()
@@ -62,57 +57,106 @@ func (g *Generator) Generate() {
 		g.updateTestRunnerFuncDecl(newRunnerFuncDecl)
 	}
 
-	g.saveToFile()
+	g.addRequiredImports()
+
+	g.saveGeneratedFile()
 }
 
-func (g *Generator) saveToFile() {
+func (g *Generator) addRequiredImports() {
+	astutil.AddImport(g.fset, g.astFile, "testing")
+	astutil.AddImport(g.fset, g.astFile, "me.weldnor/swede/runner")
+}
+
+func (g *Generator) parseSourceFile() {
+	g.fset = token.NewFileSet()
+
+	astFile, err := parser.ParseFile(g.fset, getProcessedFilePath(), nil, parser.ParseComments)
+
+	if err != nil {
+		panic(errors.New("can't parse file"))
+	}
+
+	g.astFile = astFile
+}
+
+func (g *Generator) saveGeneratedFile() {
 	outFile, err := os.OpenFile(g.filepath, os.O_WRONLY, 0666)
+	defer outFile.Close()
+
 	if err != nil {
 		panic("oops")
 	}
-	//Не забываем прибраться
-	defer outFile.Close()
 
 	if err := format.Node(outFile, g.fset, g.astFile); err != nil {
 		panic(err)
 	}
 }
 
-func (g *Generator) findStepDefinitionFuncs() {
+type stepDefinitionWithFuncName struct {
+	StepDefinition string
+	FuncName       string
+}
+
+func (g *Generator) findStepDefinitionFuncs() []stepDefinitionWithFuncName {
+	result := make([]stepDefinitionWithFuncName, 0)
+
 	for _, decl := range g.astFile.Decls {
 		funcDecl, ok := decl.(*ast.FuncDecl)
+
 		if !ok {
 			continue
 		}
 
-		fmt.Println("scanning function " + funcDecl.Name.String() + "...")
-
-		if g.checkFunction(funcDecl) {
-			fmt.Println("found step definition function: " + funcDecl.Name.String())
+		if !g.checkStepFuncSignature(funcDecl) {
+			continue
 		}
+
+		stepDefinitionComments := g.getStepCommentsFromFuncDecl(funcDecl)
+
+		//todo > 1?
+		if len(stepDefinitionComments) != 1 {
+			continue
+		}
+
+		stepDefinitionComment := stepDefinitionComments[0]
+		stepDefinition := g.parseStepDefinitionFromComment(stepDefinitionComment)
+		funcName := funcDecl.Name.String()
+
+		result = append(result, stepDefinitionWithFuncName{
+			StepDefinition: stepDefinition,
+			FuncName:       funcName,
+		})
 	}
+
+	return result
 }
 
-func (g *Generator) checkFunction(funcDecl *ast.FuncDecl) bool {
+func (g *Generator) parseStepDefinitionFromComment(commentText string) string {
+	stepDefinition := strings.ReplaceAll(commentText, "swede:step", "")
+	stepDefinition = strings.ReplaceAll(stepDefinition, "//", "")
+
+	return strings.TrimSpace(stepDefinition)
+}
+
+func (g *Generator) checkStepFuncSignature(funcDecl *ast.FuncDecl) bool {
+	//todo implement
+	return true
+}
+
+func (g *Generator) getStepCommentsFromFuncDecl(funcDecl *ast.FuncDecl) []string {
+	stepDefinitionComments := make([]string, 0)
+
 	if funcDecl.Doc == nil {
-		return false
+		return nil
 	}
 
-	comments := funcDecl.Doc.List
-
-	for _, comment := range comments {
-		if checkComment(comment.Text) {
-			return true
+	for _, comment := range funcDecl.Doc.List {
+		if strings.Contains(comment.Text, "swede:step") {
+			stepDefinitionComments = append(stepDefinitionComments, comment.Text)
 		}
 	}
-	return false
-}
 
-func checkComment(comment string) bool {
-	if strings.Contains(comment, "swede:step") {
-		return true
-	}
-	return false
+	return stepDefinitionComments
 }
 
 func (g *Generator) isTestRunnerFuncDecl(decl ast.Decl) bool {
@@ -163,19 +207,40 @@ import(
 )
 
 func TestSwedeRunner(t *testing.T) {
+
     _runner := runner.NewRunner()
-	_runner.LoadFeatureFile("./feature/formatted.swede")
+    
+    // Load feature files
+{{range $key, $value := .featureFiles}} 
+    _runner.LoadFeatureFile("{{$value}}")
+{{end}}
+
+    // Register step functions
+{{range $key, $value := .stepDefinitions}} 
+    _runner.RegisterFunc("{{$value.StepDefinition}}", {{$value.FuncName}})
+{{end}}
+    _runner.Run()
 }
 
 `
 
 func (g *Generator) generateTestRunnerFuncDecl() *ast.FuncDecl {
+	templateData := map[string]interface{}{
+		"featureFiles":    g.featureFiles,
+		"stepDefinitions": g.stepDefinitions,
+	}
+
+	buf := &bytes.Buffer{}
+
+	t := template.New("t")
+	t = template.Must(t.Parse(testRunnerTemplate))
+	t.Execute(buf, templateData)
 
 	templateAst, err := parser.ParseFile(
 		token.NewFileSet(),
 		//Источник для парсинга лежит не в файле,
 		"",
-		[]byte(testRunnerTemplate),
+		buf,
 		parser.ParseComments,
 	)
 
