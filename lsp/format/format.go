@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	"me.weldnor/swede/core/formatter"
-	"me.weldnor/swede/core/parser"
+	"me.weldnor/swede/core/lang/swede/formatter"
+	"me.weldnor/swede/core/lang/swede/parser"
 	"me.weldnor/swede/lsp/context"
 )
 

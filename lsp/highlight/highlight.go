@@ -3,7 +3,7 @@ package highlight
 import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"me.weldnor/swede/core/common"
-	"me.weldnor/swede/core/parser"
+	"me.weldnor/swede/core/lang/swede/parser"
 	"me.weldnor/swede/lsp/context"
 )
 
