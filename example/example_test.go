@@ -42,3 +42,9 @@ func TestLexerForCodeExample(t *testing.T) {
 
 	_runner.Run()
 }
+func TestSwedeRunner(t *testing.
+	T) {
+	_runner := runner.NewRunner()
+	_runner.
+		LoadFeatureFile("./feature/formatted.swede")
+}
