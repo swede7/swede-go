@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"me.weldnor/swede/core/common"
-	"me.weldnor/swede/core/lexer"
+	"me.weldnor/swede/core/lang/swede/lexer"
 )
 
 type Parser struct {

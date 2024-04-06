@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"me.weldnor/swede/core/common"
-	"me.weldnor/swede/core/lexer"
+	"me.weldnor/swede/core/lang/swede/lexer"
 )
 
 const code string = `

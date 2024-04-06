@@ -1,9 +1,17 @@
 package runner
 
-type ScenarioContext struct {
-	Variables map[string]any
+type Context struct {
+	variables map[string]any
 }
 
-func newScenarioContext() *ScenarioContext {
-	return &ScenarioContext{Variables: make(map[string]any)}
+func newContext() *Context {
+	return &Context{variables: make(map[string]any)}
+}
+
+func (c *Context) GetVariable(name string) any {
+	return c.variables[name]
+}
+
+func (c *Context) SetVariable(name string, value any) {
+	c.variables[name] = value
 }

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"me.weldnor/swede/core/parser"
+	"me.weldnor/swede/core/lang/swede/parser"
 )
 
 type Formatter struct {
