@@ -1,9 +1,6 @@
 package lexer
 
-import (
-	"strings"
-	"unicode"
-)
+import "strings"
 
 func Lex(source string) []Lexeme {
 	_lexer := newLexer(source)
@@ -18,17 +15,19 @@ type lexer struct {
 }
 
 type Lexeme struct {
+	Type  LexemeType
 	Start int
 	End   int
-	Type  LexemeType
 	Text  string
 }
 
 type LexemeType string
 
 const (
-	TEXT     LexemeType = "text"
-	VARIABLE LexemeType = "variable"
+	TEXT      LexemeType = "text"
+	L_BRACKET LexemeType = "l_bracket"
+	R_BRACKET LexemeType = "r_bracket"
+	COLON     LexemeType = "colon"
 )
 
 func newLexer(source string) *lexer {
@@ -38,21 +37,19 @@ func newLexer(source string) *lexer {
 	return lexer
 }
 
-// swede:step Add <first:int> and <second:int>
-
 func (l *lexer) lex() []Lexeme {
 	for !l.isEnd() {
 		c := l.curr()
 
-		if c == '<' {
-			l.next()
-			l.lexVariable()
-			continue
-		}
-
-		if isTextCharacter(c) {
+		switch c {
+		case '<':
+			l.addLeftBracketLexeme()
+		case '>':
+			l.addRightBracketLexeme()
+		case ':':
+			l.addColonLexeme()
+		default:
 			l.lexText()
-			continue
 		}
 	}
 
@@ -60,76 +57,58 @@ func (l *lexer) lex() []Lexeme {
 }
 
 func (l *lexer) lexText() {
-	if l.isEnd() {
-		return
-	}
-
-	startPos := l.pos
-
 	sb := strings.Builder{}
-
-	//todo possible bug
+	startPos := l.pos
 
 	for !l.isEnd() {
 		c := l.curr()
 
-		if c == '<' {
+		if c == '>' || c == '<' || c == ':' {
 			break
 		}
 
-		sb.WriteByte(l.curr())
+		sb.WriteByte(c)
 		l.next()
 	}
-
-	endPos := l.pos - 1
 
 	lexeme := Lexeme{
 		Type:  TEXT,
 		Start: startPos,
-		End:   endPos,
+		End:   l.pos - 1,
 		Text:  sb.String(),
 	}
 
-	l.lexemes = append(l.lexemes, lexeme)
+	l.addLexeme(lexeme)
 }
 
-func (l *lexer) lexVariable() {
-	if l.isEnd() {
-		return
-	}
-
-	startPos := l.pos
-
-	sb := strings.Builder{}
-
-	//todo possible bug
-
-	for !l.isEnd() {
-		c := l.curr()
-
-		if c == '>' {
-			l.next() //skip right brace
-
-			break
-		}
-
-		sb.WriteByte(l.curr())
-		l.next()
-	}
-
-	endPos := l.pos - 1
-
-	lexeme := Lexeme{
-		Type:  TEXT,
-		Start: startPos,
-		End:   endPos,
-	}
-
-	l.lexemes = append(l.lexemes, lexeme)
+func (l *lexer) addLeftBracketLexeme() {
+	lexeme := Lexeme{Type: L_BRACKET, Start: l.pos, End: l.pos, Text: "<"}
+	l.addLexeme(lexeme)
+	l.next()
 }
 
-func isTextCharacter(c byte) bool {
-	return unicode.IsLetter(rune(c))
+func (l *lexer) addRightBracketLexeme() {
+	lexeme := Lexeme{Type: R_BRACKET, Start: l.pos, End: l.pos, Text: ">"}
+	l.addLexeme(lexeme)
+	l.next()
+}
+
+func (l *lexer) addColonLexeme() {
+	lexeme := Lexeme{Type: COLON, Start: l.pos, End: l.pos, Text: ":"}
+	l.addLexeme(lexeme)
+	l.next()
+}
+
+func (l *lexer) getPreviousLexeme() *Lexeme {
+	if len(l.lexemes) == 0 {
+		return nil
+	}
+
+	return &l.lexemes[len(l.lexemes)-1]
+}
+
+func (l *lexer) addLexeme(lexeme Lexeme) {
+	l.lexemes = append(l.lexemes, lexeme)
 }
 
 func (l *lexer) curr() byte {

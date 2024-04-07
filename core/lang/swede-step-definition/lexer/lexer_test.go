@@ -8,23 +8,31 @@ import (
 )
 
 func TestLexer(t *testing.T) {
-	var testCases = []struct {
+	testCases := []struct {
 		source  string
 		lexemes []lexer.Lexeme
 	}{
 		{
 			"Hello world",
 			[]lexer.Lexeme{
-				{0, 10, lexer.TEXT, "Hello world"},
+				{lexer.TEXT, 0, 10, "Hello world"},
 			},
 		},
 		{
 			"Add <first:int> and <second:int>",
 			[]lexer.Lexeme{
-				{0, 10, lexer.TEXT, "Add "},
-				{0, 10, lexer.TEXT, "first:int"},
-				{0, 10, lexer.TEXT, " amd "},
-				{0, 10, lexer.TEXT, "second:int"},
+				{lexer.TEXT, 0, 3, "Add "},
+				{lexer.L_BRACKET, 4, 4, "<"},
+				{lexer.TEXT, 5, 9, "first"},
+				{lexer.COLON, 10, 10, ":"},
+				{lexer.TEXT, 11, 13, "int"},
+				{lexer.R_BRACKET, 14, 14, ">"},
+				{lexer.TEXT, 15, 19, " and "},
+				{lexer.L_BRACKET, 20, 20, "<"},
+				{lexer.TEXT, 21, 26, "second"},
+				{lexer.COLON, 27, 27, ":"},
+				{lexer.TEXT, 28, 30, "int"},
+				{lexer.R_BRACKET, 31, 31, ">"},
 			},
 		},
 	}
