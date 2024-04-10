@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede/lexer"
 )
 
@@ -34,7 +34,7 @@ func TestLexerForCodeExample(t *testing.T) {
 	_lexer := lexer.NewLexer(code)
 	lexemes := _lexer.Scan()
 
-	expectedLexemes := []lexer.Lexeme{
+	expectedLexemes := []common.Lexeme{
 		{lexer.AT_CHR, common.Position{Offset: 1, Line: 1, Column: 0}, common.Position{Offset: 1, Line: 1, Column: 0}, "@"},
 		{lexer.WORD, common.Position{Offset: 2, Line: 1, Column: 1}, common.Position{Offset: 4, Line: 1, Column: 3}, "all"},
 	}

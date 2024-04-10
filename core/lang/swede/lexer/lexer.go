@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 )
 
 type Lexer struct {
@@ -12,7 +12,7 @@ type Lexer struct {
 	offset  int
 	line    int
 	column  int
-	lexemes []Lexeme
+	lexemes []common.Lexeme
 }
 
 func (l *Lexer) isAtEnd() bool {
@@ -74,8 +74,8 @@ func (l *Lexer) matchString(expected string) bool {
 	return true
 }
 
-func (l *Lexer) addToken(lexemeType LexemeType, startPosition common.Position, endPosition common.Position, value string) {
-	l.lexemes = append(l.lexemes, Lexeme{lexemeType, startPosition, endPosition, value})
+func (l *Lexer) addToken(lexemeType common.LexemeType, startPosition common.Position, endPosition common.Position, value string) {
+	l.lexemes = append(l.lexemes, common.Lexeme{lexemeType, startPosition, endPosition, value})
 }
 
 func (l *Lexer) getPosition() common.Position {
@@ -99,7 +99,7 @@ func NewLexer(source string) *Lexer {
 	}
 }
 
-func (l *Lexer) Scan() []Lexeme {
+func (l *Lexer) Scan() []common.Lexeme {
 	for !l.isAtEnd() {
 		l.scanNextToken()
 	}

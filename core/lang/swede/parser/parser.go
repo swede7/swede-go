@@ -4,25 +4,24 @@ import (
 	"os"
 	"strings"
 
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede/lexer"
 )
 
 type Parser struct {
-	lexemes []lexer.Lexeme
-	nodes   []*Node
-	errors  []Error
+	lexemes []common.Lexeme
+	nodes   []*common.Node
+	errors  []common.ParserError
 	pos     int
 }
 
 type ParserResult struct {
-	RootNode Node
-	Errors   []Error
+	RootNode common.Node
+	Errors   []common.ParserError
 }
 
 func ParseFile(path string) ParserResult {
 	bytes, err := os.ReadFile(path)
-
 	if err != nil {
 		panic("can't read file " + path)
 	}
@@ -58,7 +57,7 @@ func (p *Parser) parse() ParserResult {
 		}
 	}
 
-	rootNode := Node{}
+	rootNode := common.Node{}
 	rootNode.Type = ROOT
 
 	if len(p.nodes) > 0 {
@@ -78,7 +77,7 @@ func (p *Parser) parse() ParserResult {
 	return parserResult
 }
 
-func (p *Parser) peekLexeme() lexer.Lexeme {
+func (p *Parser) peekLexeme() common.Lexeme {
 	return p.lexemes[p.pos]
 }
 
@@ -90,7 +89,7 @@ func (p *Parser) isEof() bool {
 	return p.pos >= len(p.lexemes)
 }
 
-func (p *Parser) lookup(count int) lexer.Lexeme {
+func (p *Parser) lookup(count int) common.Lexeme {
 	return p.lexemes[p.pos+count]
 }
 
@@ -98,15 +97,15 @@ func (p *Parser) lexemesLeft() int {
 	return len(p.lexemes) - p.pos
 }
 
-func (p *Parser) addNode(node Node) {
+func (p *Parser) addNode(node common.Node) {
 	p.nodes = append(p.nodes, &node)
 }
 
 func (p *Parser) addError(startPosition common.Position, endPosition common.Position, message string) {
-	p.errors = append(p.errors, Error{StartPosition: startPosition, EndPosition: endPosition, Message: message})
+	p.errors = append(p.errors, common.ParserError{StartPosition: startPosition, EndPosition: endPosition, Message: message})
 }
 
-func (p *Parser) getPreviousLexeme() lexer.Lexeme {
+func (p *Parser) getPreviousLexeme() common.Lexeme {
 	return p.lexemes[p.pos-1]
 }
 
@@ -164,7 +163,7 @@ func tagRule(p *Parser) bool {
 	atLexeme := p.peekLexeme()
 	wordLexeme := p.lookup(1)
 
-	tagNode := Node{
+	tagNode := common.Node{
 		Type:          TAG,
 		StartPosition: atLexeme.StartPosition,
 		EndPosition:   wordLexeme.EndPosition,
@@ -197,7 +196,7 @@ func commentRule(p *Parser) bool {
 		p.advance(1)
 	}
 
-	commentNode := Node{
+	commentNode := common.Node{
 		Type:          COMMENT,
 		StartPosition: hashLexeme.StartPosition,
 		EndPosition:   p.peekLexeme().EndPosition,
@@ -227,7 +226,7 @@ func featureRule(p *Parser) bool {
 		p.advance(1)
 	}
 
-	featureNode := Node{Type: FEATURE, StartPosition: featureWordLexeme.StartPosition, EndPosition: p.getPreviousLexeme().EndPosition, Value: sb.String()}
+	featureNode := common.Node{Type: FEATURE, StartPosition: featureWordLexeme.StartPosition, EndPosition: p.getPreviousLexeme().EndPosition, Value: sb.String()}
 	p.addNode(featureNode)
 	return true
 }
@@ -270,7 +269,7 @@ func scenarioRule(p *Parser) bool {
 		p.advance(1)
 	}
 
-	featureNode := Node{
+	featureNode := common.Node{
 		Type:          SCENARIO,
 		StartPosition: scenarioWordLexeme.StartPosition,
 		EndPosition:   p.getPreviousLexeme().EndPosition,
@@ -317,7 +316,7 @@ func stepRule(p *Parser) bool {
 		p.advance(1)
 	}
 
-	stepNode := Node{Type: STEP, StartPosition: dashLexeme.StartPosition, EndPosition: p.getPreviousLexeme().EndPosition, Value: sb.String()}
+	stepNode := common.Node{Type: STEP, StartPosition: dashLexeme.StartPosition, EndPosition: p.getPreviousLexeme().EndPosition, Value: sb.String()}
 	p.addNode(stepNode)
 	return true
 }
@@ -344,7 +343,7 @@ func handleUnexpectedLexemeRule(p *Parser) bool {
 	}
 
 	unexpectedLexeme := p.peekLexeme()
-	unexpectedNode := Node{Type: UNEXPECTED, StartPosition: unexpectedLexeme.StartPosition, EndPosition: unexpectedLexeme.EndPosition, Value: unexpectedLexeme.Value}
+	unexpectedNode := common.Node{Type: UNEXPECTED, StartPosition: unexpectedLexeme.StartPosition, EndPosition: unexpectedLexeme.EndPosition, Value: unexpectedLexeme.Value}
 
 	p.addNode(unexpectedNode)
 	p.addError(unexpectedLexeme.StartPosition, unexpectedLexeme.EndPosition, "unexpected lexeme")
@@ -352,7 +351,7 @@ func handleUnexpectedLexemeRule(p *Parser) bool {
 	return true
 }
 
-var validNodeTypes = map[NodeType]bool{
+var validNodeTypes = map[common.NodeType]bool{
 	UNEXPECTED: true,
 	COMMENT:    true,
 	FEATURE:    true,
@@ -367,7 +366,7 @@ func handleUnexpectedNodesRule(p *Parser) bool {
 	someNodesWasProcessed := false
 	for i, node := range p.nodes {
 		if _, ok := validNodeTypes[node.Type]; !ok {
-			wrapperNode := Node{Type: UNEXPECTED, StartPosition: node.StartPosition, EndPosition: node.EndPosition, Value: node.Value}
+			wrapperNode := common.Node{Type: UNEXPECTED, StartPosition: node.StartPosition, EndPosition: node.EndPosition, Value: node.Value}
 
 			wrapperNode.AppendChild(node)
 			p.nodes[i] = &wrapperNode

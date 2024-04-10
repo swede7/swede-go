@@ -4,12 +4,12 @@ import (
 	"strings"
 	"sync"
 
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede/parser"
 )
 
 type Linter struct {
-	rootNode *parser.Node
+	rootNode *common.Node
 }
 
 type LinterError struct {
@@ -27,7 +27,7 @@ const (
 	ERROR LinterErrorSeverity = "ERROR"
 )
 
-func NewLinter(rootNode *parser.Node) *Linter {
+func NewLinter(rootNode *common.Node) *Linter {
 	return &Linter{
 		rootNode: rootNode,
 	}
@@ -64,7 +64,7 @@ func (l *Linter) Lint() []LinterError {
 func emptyFeatureTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
-	parser.VisitNode(l.rootNode, func(n *parser.Node) {
+	common.VisitNode(l.rootNode, func(n *common.Node) {
 		if n.Type != parser.FEATURE {
 			return
 		}
@@ -87,7 +87,7 @@ func emptyFeatureTextRule(l *Linter) []LinterError {
 func emptyScenarioTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
-	parser.VisitNode(l.rootNode, func(n *parser.Node) {
+	common.VisitNode(l.rootNode, func(n *common.Node) {
 		if n.Type != parser.SCENARIO {
 			return
 		}
@@ -110,7 +110,7 @@ func emptyScenarioTextRule(l *Linter) []LinterError {
 func emptyStepTextRule(l *Linter) []LinterError {
 	foundedErrors := make([]LinterError, 0)
 
-	parser.VisitNode(l.rootNode, func(n *parser.Node) {
+	common.VisitNode(l.rootNode, func(n *common.Node) {
 		if n.Type != parser.STEP {
 			return
 		}

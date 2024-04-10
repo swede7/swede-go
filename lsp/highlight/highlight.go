@@ -2,7 +2,7 @@ package highlight
 
 import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede/parser"
 	"me.weldnor/swede/lsp/context"
 )
@@ -29,7 +29,7 @@ func Highlight() (*protocol.SemanticTokens, error) {
 	return getSemanticTokensByAst(&parserResult.RootNode), nil
 }
 
-func getSemanticTokensByAst(rootNode *parser.Node) *protocol.SemanticTokens {
+func getSemanticTokensByAst(rootNode *common.Node) *protocol.SemanticTokens {
 	data := make([]uint32, 0)
 
 	var prevToken *highlightToken
@@ -78,10 +78,10 @@ func getSemanticTokensByAst(rootNode *parser.Node) *protocol.SemanticTokens {
 	}
 }
 
-func getHighlightTokensByAst(rootNode *parser.Node) []highlightToken {
+func getHighlightTokensByAst(rootNode *common.Node) []highlightToken {
 	tokens := make([]highlightToken, 0)
 
-	parser.VisitNode(rootNode, func(n *parser.Node) {
+	common.VisitNode(rootNode, func(n *common.Node) {
 		var tokenType tokenType
 
 		switch n.Type {
