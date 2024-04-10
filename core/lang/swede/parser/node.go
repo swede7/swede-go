@@ -1,9 +1,13 @@
+package parser
+
+import "me.weldnor/swede/core/lang/common"
+
 const (
-	ROOT       NodeType = "ROOT"
-	UNEXPECTED NodeType = "UNEXPECTED"
-	COMMENT    NodeType = "COMMENT"
-	SCENARIO   NodeType = "SCENARIO"
-	FEATURE    NodeType = "FEATURE"
-	STEP       NodeType = "STEP"
-	TAG        NodeType = "TAG"
+	ROOT       common.NodeType = "ROOT"
+	UNEXPECTED common.NodeType = "UNEXPECTED"
+	COMMENT    common.NodeType = "COMMENT"
+	SCENARIO   common.NodeType = "SCENARIO"
+	FEATURE    common.NodeType = "FEATURE"
+	STEP       common.NodeType = "STEP"
+	TAG        common.NodeType = "TAG"
 )

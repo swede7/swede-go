@@ -1,43 +1,46 @@
 package lexer
 
-import "strings"
+import (
+	"errors"
+	"strings"
 
-func Lex(source string) []Lexeme {
-	_lexer := newLexer(source)
+	"me.weldnor/swede/core/lang/common"
+)
 
-	return _lexer.lex()
+func Lex(source string) ([]common.Lexeme, error) {
+	_lexer, err := newLexer(source)
+	if err != nil {
+		return nil, err
+	}
+
+	return _lexer.lex(), nil
 }
 
 type lexer struct {
 	source  string
 	pos     int
-	lexemes []Lexeme
+	lexemes []common.Lexeme
 }
-
-type Lexeme struct {
-	Type  LexemeType
-	Start int
-	End   int
-	Text  string
-}
-
-type LexemeType string
 
 const (
-	TEXT      LexemeType = "text"
-	L_BRACKET LexemeType = "l_bracket"
-	R_BRACKET LexemeType = "r_bracket"
-	COLON     LexemeType = "colon"
+	TEXT      common.LexemeType = "text"
+	L_BRACKET common.LexemeType = "l_bracket"
+	R_BRACKET common.LexemeType = "r_bracket"
+	COLON     common.LexemeType = "colon"
 )
 
-func newLexer(source string) *lexer {
+func newLexer(source string) (*lexer, error) {
+	if strings.Contains(source, "\n") {
+		return nil, errors.New("Lexer does not support multiline strings")
+	}
+
 	lexer := &lexer{}
 	lexer.source = source
 
-	return lexer
+	return lexer, nil
 }
 
-func (l *lexer) lex() []Lexeme {
+func (l *lexer) lex() []common.Lexeme {
 	for !l.isEnd() {
 		c := l.curr()
 
@@ -58,7 +61,7 @@ func (l *lexer) lex() []Lexeme {
 
 func (l *lexer) lexText() {
 	sb := strings.Builder{}
-	startPos := l.pos
+	startPos := l.getPosition()
 
 	for !l.isEnd() {
 		c := l.curr()
@@ -71,35 +74,35 @@ func (l *lexer) lexText() {
 		l.next()
 	}
 
-	lexeme := Lexeme{
-		Type:  TEXT,
-		Start: startPos,
-		End:   l.pos - 1,
-		Text:  sb.String(),
+	lexeme := common.Lexeme{
+		Type:          TEXT,
+		StartPosition: startPos,
+		EndPosition:   l.getPosition().Inc(),
+		Value:         sb.String(),
 	}
 
 	l.addLexeme(lexeme)
 }
 
 func (l *lexer) addLeftBracketLexeme() {
-	lexeme := Lexeme{Type: L_BRACKET, Start: l.pos, End: l.pos, Text: "<"}
+	lexeme := common.Lexeme{Type: L_BRACKET, StartPosition: l.getPosition(), EndPosition: l.getPosition(), Value: "<"}
 	l.addLexeme(lexeme)
 	l.next()
 }
 
 func (l *lexer) addRightBracketLexeme() {
-	lexeme := Lexeme{Type: R_BRACKET, Start: l.pos, End: l.pos, Text: ">"}
+	lexeme := common.Lexeme{Type: R_BRACKET, StartPosition: l.getPosition(), EndPosition: l.getPosition(), Value: ">"}
 	l.addLexeme(lexeme)
 	l.next()
 }
 
 func (l *lexer) addColonLexeme() {
-	lexeme := Lexeme{Type: COLON, Start: l.pos, End: l.pos, Text: ":"}
+	lexeme := common.Lexeme{Type: COLON, StartPosition: l.getPosition(), EndPosition: l.getPosition(), Value: ":"}
 	l.addLexeme(lexeme)
 	l.next()
 }
 
-func (l *lexer) getPreviousLexeme() *Lexeme {
+func (l *lexer) getPreviousLexeme() *common.Lexeme {
 	if len(l.lexemes) == 0 {
 		return nil
 	}
@@ -107,7 +110,7 @@ func (l *lexer) getPreviousLexeme() *Lexeme {
 	return &l.lexemes[len(l.lexemes)-1]
 }
 
-func (l *lexer) addLexeme(lexeme Lexeme) {
+func (l *lexer) addLexeme(lexeme common.Lexeme) {
 	l.lexemes = append(l.lexemes, lexeme)
 }
 
@@ -117,6 +120,10 @@ func (l *lexer) curr() byte {
 
 func (l *lexer) next() {
 	l.pos++
+}
+
+func (l *lexer) getPosition() common.Position {
+	return common.Position{Line: 0, Column: l.pos, Offset: l.pos}
 }
 
 func (l *lexer) isEnd() bool {

@@ -1,21 +1,25 @@
 package parser
 
 import (
-	"me.weldnor/swede/core/common"
+	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede-step-definition/lexer"
 )
 
 type parser struct {
-	source  string
-	lexemes []lexer.Lexeme
+	lexemes []common.Lexeme
 	nodes   []common.Node
 	pos     int
 }
 
-func Parse(source string) common.Node {
-	lexemes := lexer.Lex(source)
+func Parse(source string) (common.Node, error) {
+	lexemes, err := lexer.Lex(source)
+	if err != nil {
+		return common.Node{}, err
+	}
+
 	_parser := newParser(lexemes)
-	return _parser.Parse()
+
+	return _parser.Parse(), nil
 }
 
 func (p *parser) Parse() common.Node {
@@ -25,6 +29,7 @@ func (p *parser) Parse() common.Node {
 		for _, rule := range parseRules {
 			if rule(p) {
 				anyRuleWasApplied = true
+
 				break
 			}
 		}
@@ -53,12 +58,12 @@ const (
 	COLON     common.NodeType = "colon"
 )
 
-// region parse rules
+// region Parse rules
 
 type parseRule func(*parser) bool
 
 var parseRules = []parseRule{
-	VariableDefinitionRule,
+	variableRule,
 	addNodeRule,
 	mergeColonAndTextRule,
 	mergeToRootNode,
@@ -72,9 +77,9 @@ func addNodeRule(p *parser) bool {
 	newNode := common.Node{}
 	currentLexeme := p.getCurrentLexeme()
 
-	newNode.StartPosition = currentLexeme.Start
-	newNode.EndPosition = currentLexeme.End
-	newNode.Value = currentLexeme.Text
+	newNode.StartPosition = currentLexeme.StartPosition
+	newNode.EndPosition = currentLexeme.EndPosition
+	newNode.Value = currentLexeme.Value
 
 	switch currentLexeme.Type {
 	case lexer.TEXT:
@@ -102,7 +107,7 @@ func mergeColonAndTextRule(p *parser) bool {
 
 	updatedNodes := make([]common.Node, 0)
 
-	for i := 0; i < len(p.nodes); i++ {
+	for i := 0; i < len(p.nodes) - 1; i++ {
 		currentNode := p.nodes[i]
 
 		// last node
@@ -176,6 +181,7 @@ func variableRule(p *parser) bool {
 	variableNode.AppendChild(&variableNameNode)
 	variableNode.AppendChild(&variableTypeNode)
 
+	p.deleteNodesFromEnd(5)
 	p.addNode(variableNode)
 
 	return true
@@ -198,8 +204,8 @@ func mergeToRootNode(p *parser) bool {
 	rootNode.Type = ROOT
 
 	if len(p.nodes) == 0 {
-		rootNode.StartPosition = 0
-		rootNode.EndPosition = 0
+		rootNode.StartPosition = common.Position{0, 0, 0}
+		rootNode.EndPosition = common.Position{0, 0, 0}
 
 		p.nodes = append(p.nodes, rootNode)
 		return true
@@ -211,21 +217,22 @@ func mergeToRootNode(p *parser) bool {
 		return true
 	}
 
-	rootNode.StartPosition = 0
-	rootNode.EndPosition = 0
+	rootNode.StartPosition = common.Position{0, 0, 0}
+	rootNode.EndPosition = common.Position{0, 0, 0}
+
 	for i := 0; i < len(p.nodes); i++ {
 		rootNode.AppendChild(&p.nodes[i])
 	}
 
 	p.nodes = []common.Node{rootNode}
 	return true
-}   
+}
 
-func (p *parser) getCurrentLexeme() lexer.Lexeme {
+func (p *parser) getCurrentLexeme() common.Lexeme {
 	return p.lexemes[p.pos]
 }
 
-func newParser(lexemes []lexer.Lexeme) *parser {
+func newParser(lexemes []common.Lexeme) *parser {
 	return &parser{lexemes: lexemes}
 }
 
@@ -242,7 +249,9 @@ func (p *parser) next() {
 	p.pos++
 }
 
-
+func (p *parser) deleteNodesFromEnd(count int) {
+	p.nodes = p.nodes[:len(p.nodes)-count]
+}
 
 func (p *parser) isEnd() bool {
 	return p.pos >= len(p.lexemes)

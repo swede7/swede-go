@@ -1,167 +1,43 @@
-package parser
+package parser_test
 
 import (
-	"reflect"
 	"testing"
 
-	"me.weldnor/swede/core/common"
-	"me.weldnor/swede/core/lang/swede-step-definition/lexer"
+	"github.com/stretchr/testify/assert"
+	"me.weldnor/swede/core/lang/swede-step-definition/parser"
 )
 
 func TestParse(t *testing.T) {
-	type args struct {
-		source string
-	}
-	tests := []struct {
-		name string
-		args args
-		want common.Node
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Parse(tt.args.source); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Parse() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	code := "Add <first:int> and <second:string>"
 
-func Test_parser_Parse(t *testing.T) {
-	tests := []struct {
-		name string
-		p    *parser
-		want common.Node
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.Parse(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parser.Parse() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	rootNode, err := parser.Parse(code)
 
-func Test_variableDefinitionRule(t *testing.T) {
-	type args struct {
-		parser *parser
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := variableRule(tt.args.parser); got != tt.want {
-				t.Errorf("variableDefinitionRule() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	assert.Nil(t, err)
+	assert.NotNil(t, rootNode)
 
-func TestVariableDefinitionRule(t *testing.T) {
-	type args struct {
-		parser *parser
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := VariableDefinitionRule(tt.args.parser); got != tt.want {
-				t.Errorf("VariableDefinitionRule() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	assert.Len(t, rootNode.Children, 4)
 
-func Test_addColonToTextRule(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mergeColonAndTextRule()
-		})
-	}
-}
+	firstTextNode := rootNode.Children[0]
+	assert.Equal(t, parser.TEXT, firstTextNode.Type)
+	assert.Equal(t, "Add ", firstTextNode.Value)
 
-func Test_mergeToRootNode(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mergeToRootNode()
-		})
-	}
-}
+	firstVariableNode := rootNode.Children[1]
+	assert.Equal(t, parser.VARIABLE, firstVariableNode.Type)
 
-func Test_parser_getPreviousLexeme(t *testing.T) {
-	type args struct {
-		n int
-	}
-	tests := []struct {
-		name string
-		p    *parser
-		args args
-		want string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.getPreviousLexeme(tt.args.n); got != tt.want {
-				t.Errorf("parser.getPreviousLexeme() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	firstVariableNameNode := firstVariableNode.GetChildByType(parser.VARIABLE_NAME)
+	assert.Equal(t, "first", firstVariableNameNode.Value)
+	firstVariableTypeNode := firstVariableNode.GetChildByType(parser.VARIABLE_TYPE)
+	assert.Equal(t, "int", firstVariableTypeNode.Value)
 
-func Test_newParser(t *testing.T) {
-	type args struct {
-		lexemes []lexer.Lexeme
-	}
-	tests := []struct {
-		name string
-		args args
-		want *parser
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newParser(tt.args.lexemes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newParser() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	secondTextNode := rootNode.Children[2]
+	assert.Equal(t, parser.TEXT, secondTextNode.Type)
+	assert.Equal(t, " and ", secondTextNode.Value)
 
-func Test_parser_getCurrentLexeme(t *testing.T) {
-	tests := []struct {
-		name string
-		p    *parser
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.getCurrentLexeme()
-		})
-	}
+	secondVariableNode := rootNode.Children[3]
+	assert.Equal(t, parser.VARIABLE, secondVariableNode.Type)
+
+	secondVariableNameNode := secondVariableNode.GetChildByType(parser.VARIABLE_NAME)
+	assert.Equal(t, "second", secondVariableNameNode.Value)
+	secondVariableTypeNode := secondVariableNode.GetChildByType(parser.VARIABLE_TYPE)
+	assert.Equal(t, "string", secondVariableTypeNode.Value)
 }

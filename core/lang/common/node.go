@@ -1,12 +1,9 @@
 package common
 
-import (
-	"me.weldnor/swede/core/common"
-)
 
 type Node struct {
-	StartPosition common.Position
-	EndPosition   common.Position
+	StartPosition Position
+	EndPosition   Position
 	Value         string
 	Type          NodeType
 	Children      []*Node

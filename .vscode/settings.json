@@ -1,7 +1,8 @@
 {
     "go.lintTool": "golangci-lint",
-    "go.lintFlags": [
-        "--fast"
-    ],
-    "C_Cpp.intelliSenseEngineFallback": "enabled"
+    "go.lintFlags": ["--fast"],
+    "go.useLanguageServer": true,
+    "gopls": {
+        "formatting.gofumpt": true
+    }
 }
