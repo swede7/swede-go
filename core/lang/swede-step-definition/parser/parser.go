@@ -107,7 +107,7 @@ func mergeColonAndTextRule(p *parser) bool {
 
 	updatedNodes := make([]common.Node, 0)
 
-	for i := 0; i < len(p.nodes) - 1; i++ {
+	for i := 0; i < len(p.nodes)-1; i++ {
 		currentNode := p.nodes[i]
 
 		// last node

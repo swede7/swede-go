@@ -15,12 +15,7 @@ type Parser struct {
 	pos     int
 }
 
-type ParserResult struct {
-	RootNode common.Node
-	Errors   []common.ParserError
-}
-
-func ParseFile(path string) ParserResult {
+func ParseFile(path string) common.ParserResult {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		panic("can't read file " + path)
@@ -31,7 +26,7 @@ func ParseFile(path string) ParserResult {
 	return ParseCode(code)
 }
 
-func ParseCode(code string) ParserResult {
+func ParseCode(code string) common.ParserResult {
 	lexer := lexer.NewLexer(code)
 	lexemes := lexer.Scan()
 
@@ -41,7 +36,7 @@ func ParseCode(code string) ParserResult {
 	return parser.parse()
 }
 
-func (p *Parser) parse() ParserResult {
+func (p *Parser) parse() common.ParserResult {
 	for {
 		anyRuleWasApplied := false
 
@@ -70,7 +65,7 @@ func (p *Parser) parse() ParserResult {
 		rootNode.EndPosition = node.EndPosition
 	}
 
-	parserResult := ParserResult{}
+	parserResult := common.ParserResult{}
 	parserResult.Errors = p.errors
 	parserResult.RootNode = rootNode
 
