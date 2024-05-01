@@ -2,7 +2,7 @@ package generator
 
 import (
 	"errors"
-	"go/ast"
+	"github.com/dave/dst"
 	"os"
 	"path"
 )
@@ -16,9 +16,9 @@ func getProcessedFilePath() string {
 	return path.Join(wd, os.Getenv("GOFILE"))
 }
 
-func funcDeclVisitor(decls []ast.Decl, f func(*ast.FuncDecl)) {
+func funcDeclVisitor(decls []dst.Decl, f func(*dst.FuncDecl)) {
 	for _, decl := range decls {
-		funcDecl, ok := decl.(*ast.FuncDecl)
+		funcDecl, ok := decl.(*dst.FuncDecl)
 
 		if !ok {
 			continue
@@ -28,13 +28,13 @@ func funcDeclVisitor(decls []ast.Decl, f func(*ast.FuncDecl)) {
 	}
 }
 
-func funcDeclHasComment(funcDecl *ast.FuncDecl, checkFunc func(string) bool) bool {
-	if funcDecl.Doc == nil {
+func funcDeclHasComment(funcDecl *dst.FuncDecl, checkFunc func(string) bool) bool {
+	if funcDecl.Decs.Start == nil {
 		return false
 	}
 
-	for _, comment := range funcDecl.Doc.List {
-		if checkFunc(comment.Text) {
+	for _, _comment := range funcDecl.Decs.Start.All() {
+		if checkFunc(_comment) {
 			return true
 		}
 	}
@@ -42,16 +42,16 @@ func funcDeclHasComment(funcDecl *ast.FuncDecl, checkFunc func(string) bool) boo
 	return false
 }
 
-func funcDeclGetComment(funcDecl *ast.FuncDecl, checkFunc func(string) bool) (string, error) {
-	if funcDecl.Doc == nil {
+func funcDeclGetComment(funcDecl *dst.FuncDecl, checkFunc func(string) bool) (string, error) {
+	if funcDecl.Decs.Start == nil {
 		return "", errors.New("no comments")
 	}
 
-	for _, comment := range funcDecl.Doc.List {
-		if checkFunc(comment.Text) {
-			return comment.Text, nil
+	for _, _comment := range funcDecl.Decs.Start.All() {
+		if checkFunc(_comment) {
+			return _comment, nil
 		}
 	}
 
-	return "", errors.New("no comment found by condition")
+	return "", errors.New("no _comment found by condition")
 }

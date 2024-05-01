@@ -1,0 +1,19 @@
+package example
+
+import (
+	"me.weldnor/swede/runner"
+)
+
+//go:generate swede gen
+
+// swede:step print hello world
+func printHelloWorld(ctx *runner.Context) runner.ScenarioExecutionResult {
+	return runner.ScenarioExecutionResult{}
+}
+
+func TestSwedeRunner(t *testing.T) {
+	_runner := runner.NewRunner()
+	_runner.RegisterFunc("print hello world", printHelloWorld)
+
+	_runner.Run()
+}
