@@ -15,7 +15,6 @@ func printHelloWorld(ctx *runner.Context) runner.ScenarioExecutionResult {
 func TestSwedeRunner(t *testing.T) {
 	_runner := runner.NewRunner()
 	_runner.RegisterFunc("print hello world", printHelloWorld)
-
 	_runner.Run()
 }
 

@@ -1,0 +1,37 @@
+package example
+
+import (
+	"me.weldnor/swede/runner"
+	"testing"
+)
+
+//go:generate swede gen
+
+// swede:beforeScenario
+func beforeScenario(ctx *runner.Context) {
+	fmt.Println("beforeScenario")
+}
+
+// swede:afterScenario
+func afterScenario(ctx *runner.Context) {
+	fmt.Println("afterScenario")
+}
+
+// swede:beforeFeature
+func beforeFeature(ctx *runner.Context) {
+	fmt.Println("beforeFeature")
+}
+
+// swede:afterFeature
+func afterFeature(ctx *runner.Context) {
+	fmt.Println("afterFeature")
+}
+
+func TestSwedeRunner(t *testing.T) {
+	_runner := runner.NewRunner()
+	_runner.RegisterBeforeFeatureFunc(beforeFeature)
+	_runner.RegisterAfterFeatureFunc(afterFeature)
+	_runner.RegisterBeforeScenarioFunc(beforeScenario)
+	_runner.RegisterAfterScenarioFunc(afterScenario)
+	_runner.Run()
+}

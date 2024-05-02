@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -8,19 +9,20 @@ import (
 )
 
 type Runner struct {
-	registeredFuncs map[string]RegisteredFunc
+	registeredFuncs map[string]StepFunc
 
-	beforeScenarioFunc RegisteredFunc
-	afterScenarioFunc  RegisteredFunc
+	beforeScenarioFunc HandlerFunc
+	afterScenarioFunc  HandlerFunc
 
-	beforeFeatureFunc RegisteredFunc
-	afterFeatureFunc  RegisteredFunc
+	beforeFeatureFunc HandlerFunc
+	afterFeatureFunc  HandlerFunc
 
 	featureName string
 	scenarios   []Scenario
 }
 
-type RegisteredFunc func(*Context) ScenarioExecutionResult
+type StepFunc func(*Context) error
+type HandlerFunc func(*Context)
 
 func NewRunner() *Runner {
 	return new(Runner)
@@ -54,77 +56,111 @@ func (r *Runner) LoadFeatureFile(path string) {
 	r.scenarios = scenarios
 }
 
-func (e *Runner) RegisterFunc(name string, registeredFunc RegisteredFunc) {
-	if e.registeredFuncs == nil {
-		e.registeredFuncs = make(map[string]RegisteredFunc)
+func (r *Runner) RegisterFunc(name string, registeredFunc StepFunc) {
+	if r.registeredFuncs == nil {
+		r.registeredFuncs = make(map[string]StepFunc)
 	}
 
-	e.registeredFuncs[name] = registeredFunc
+	r.registeredFuncs[name] = registeredFunc
 }
 
-func (e *Runner) RegisterBeforeScenarioFunc(registeredFunc RegisteredFunc) {
-	e.beforeScenarioFunc = registeredFunc
+func (r *Runner) RegisterBeforeScenarioFunc(registeredFunc HandlerFunc) {
+	r.beforeScenarioFunc = registeredFunc
 }
 
-func (e *Runner) RegisterAfterScenarioFunc(registeredFunc RegisteredFunc) {
-	e.afterScenarioFunc = registeredFunc
+func (r *Runner) RegisterAfterScenarioFunc(registeredFunc HandlerFunc) {
+	r.afterScenarioFunc = registeredFunc
 }
 
-func (e *Runner) RegisterBeforeFeatureFunc(registeredFunc RegisteredFunc) {
-	e.beforeFeatureFunc = registeredFunc
+func (r *Runner) RegisterBeforeFeatureFunc(registeredFunc HandlerFunc) {
+	r.beforeFeatureFunc = registeredFunc
 }
 
-func (e *Runner) RegisterAfterFeatureFunc(registeredFunc RegisteredFunc) {
-	e.afterFeatureFunc = registeredFunc
+func (r *Runner) RegisterAfterFeatureFunc(registeredFunc HandlerFunc) {
+	r.afterFeatureFunc = registeredFunc
 }
 
-func (e *Runner) Run() {
-	fmt.Printf("start running %s\n", e.featureName)
+func (r *Runner) Run() {
+	fmt.Printf("Running feature %s\n\n", r.featureName)
 
 	context := newContext()
 
-	if e.beforeFeatureFunc != nil {
-		e.beforeFeatureFunc(context)
+	if r.beforeFeatureFunc != nil {
+		r.beforeFeatureFunc(context)
 	}
 
-	for _, scenario := range e.scenarios {
-		result := e.executeScenario(scenario, context)
-
-		if result.Status {
-			fmt.Printf("[PASS] %s\n", scenario.Name)
-		} else {
-			fmt.Printf("[FAIL] %s: %s\n", scenario.Name, result.Message)
-		}
+	for _, scenario := range r.scenarios {
+		r.executeScenario(scenario, context)
 	}
 
-	if e.afterFeatureFunc != nil {
-		e.afterFeatureFunc(context)
+	if r.afterFeatureFunc != nil {
+		r.afterFeatureFunc(context)
 	}
 }
 
-func (e *Runner) executeScenario(scenario Scenario, context *Context) ScenarioExecutionResult {
-	if e.beforeScenarioFunc != nil {
-		e.beforeScenarioFunc(context)
+type executionStatus string
+
+const (
+	passed  executionStatus = "passed"
+	failed  executionStatus = "failed"
+	skipped executionStatus = "skipped"
+)
+
+func (r *Runner) executeScenario(scenario Scenario, context *Context) {
+	fmt.Printf("\tRunning scenario %s\n\n", scenario.Name)
+
+	if r.beforeScenarioFunc != nil {
+		r.beforeScenarioFunc(context)
 	}
+
+	isFailed := false
 
 	for _, step := range scenario.Steps {
-		stepName := step.Name
-		registeredFunc, ok := e.registeredFuncs[stepName]
-
-		if !ok {
-			return ScenarioExecutionResult{false, "step with name " + stepName + " is not registered"}
+		if isFailed {
+			fmt.Printf("\t\t- Skipping step %s ⚠️\n", step.Name)
+			continue
 		}
 
-		stepResult := registeredFunc(context)
+		fmt.Printf("\t\t- Running step %s ", step.Name)
 
-		if !stepResult.Status {
-			return ScenarioExecutionResult{false, "failed on step " + stepName}
+		result := r.executeStep(step, context)
+
+		switch result.status {
+		case passed:
+			fmt.Println("✅")
+		case failed:
+			fmt.Println("❌")
+			fmt.Printf(" failed with error: %s\n", result.error)
+			isFailed = true
 		}
+
 	}
 
-	if e.afterScenarioFunc != nil {
-		e.afterScenarioFunc(context)
+	if r.afterScenarioFunc != nil {
+		r.afterScenarioFunc(context)
 	}
 
-	return ScenarioExecutionResult{Status: true}
+	fmt.Println()
+}
+
+type stepExecutionResult struct {
+	status executionStatus
+	error  error
+}
+
+func (r *Runner) executeStep(step Step, context *Context) stepExecutionResult {
+	stepName := step.Name
+	registeredFunc, ok := r.registeredFuncs[stepName]
+
+	if !ok {
+		return stepExecutionResult{status: failed, error: errors.New("step is not defined")}
+	}
+
+	err := registeredFunc(context)
+
+	if err != nil {
+		return stepExecutionResult{status: failed, error: err}
+	}
+
+	return stepExecutionResult{status: passed}
 }

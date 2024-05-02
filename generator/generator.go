@@ -295,12 +295,26 @@ import(
 
 func TestSwedeRunner(t *testing.T) {
     _runner := runner.NewRunner()
+
 {{range $key, $value := .featureFiles}} 
     _runner.LoadFeatureFile("{{$value}}")
 {{end}}
 {{range $key, $value := .stepDefinitions}} 
     _runner.RegisterFunc("{{$value.StepDefinition}}", {{$value.FuncName}})
 {{end}}
+{{if .beforeFeatureFuncName}} 
+    _runner.RegisterBeforeFeatureFunc({{.beforeFeatureFuncName}})
+{{end}}
+{{if .afterFeatureFuncName}} 
+    _runner.RegisterAfterFeatureFunc({{.afterFeatureFuncName}})
+{{end}}
+{{if .beforeScenarioFuncName}} 
+    _runner.RegisterBeforeScenarioFunc({{.beforeScenarioFuncName}})
+{{end}}
+{{if .afterScenarioFuncName}} 
+    _runner.RegisterAfterScenarioFunc({{.afterScenarioFuncName}})
+{{end}}
+
     _runner.Run()
 }
 
