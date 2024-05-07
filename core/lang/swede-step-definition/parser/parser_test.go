@@ -4,13 +4,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"me.weldnor/swede/core/lang/swede-step-definition/model"
 	"me.weldnor/swede/core/lang/swede-step-definition/parser"
 )
 
 func TestParse(t *testing.T) {
 	code := "Add <first:int> and <second:string>"
 
-	rootNode, err := parser.Parse(code)
+	parserResult, err := parser.Parse(code)
+
+	assert.Nil(t, err)
+
+	rootNode := parserResult.RootNode
 
 	assert.Nil(t, err)
 	assert.NotNil(t, rootNode)
@@ -40,4 +45,18 @@ func TestParse(t *testing.T) {
 	assert.Equal(t, "second", secondVariableNameNode.Value)
 	secondVariableTypeNode := secondVariableNode.GetChildByType(parser.VARIABLE_TYPE)
 	assert.Equal(t, "string", secondVariableTypeNode.Value)
+
+	// validate _model
+
+	_model := parserResult.StepDefinition
+
+	assert.Equal(t, 2, len(_model.Variables))
+
+	firstVariableModel := _model.Variables[0]
+	assert.Equal(t, "first", firstVariableModel.Name)
+	assert.Equal(t, model.Int, firstVariableModel.Type)
+
+	secondVariableModel := _model.Variables[1]
+	assert.Equal(t, "second", secondVariableModel.Name)
+	assert.Equal(t, model.String, secondVariableModel.Type)
 }

@@ -3,26 +3,88 @@ package parser
 import (
 	"me.weldnor/swede/core/lang/common"
 	"me.weldnor/swede/core/lang/swede-step-definition/lexer"
+	"me.weldnor/swede/core/lang/swede-step-definition/model"
+	"regexp"
 )
 
 type parser struct {
+	source  string
 	lexemes []common.Lexeme
 	nodes   []common.Node
 	pos     int
+
+	rootNode common.Node //after Parse()
+	model    model.StepDefinition
 }
 
-func Parse(source string) (common.Node, error) {
+type ParserResult struct {
+	common.ParserResult
+	StepDefinition model.StepDefinition
+}
+
+func Parse(source string) (*ParserResult, error) {
 	lexemes, err := lexer.Lex(source)
 	if err != nil {
-		return common.Node{}, err
+		return nil, err
 	}
 
 	_parser := newParser(lexemes)
+	_parser.source = source
 
-	return _parser.Parse(), nil
+	return _parser.Parse()
 }
 
-func (p *parser) Parse() common.Node {
+func (p *parser) Parse() (*ParserResult, error) {
+	p.applyParseRules()
+
+	_model := p.getModel()
+
+	result := ParserResult{}
+	result.StepDefinition = _model
+	result.RootNode = p.rootNode
+	result.Errors = make([]common.ParserError, 0) //todo fixme
+
+	return &result, nil
+}
+
+func (p *parser) getModel() model.StepDefinition {
+	_model := model.StepDefinition{}
+	_model.Text = p.source
+
+	regexString := ""
+
+	variables := make([]model.Variable, 0)
+
+	for _, node := range p.rootNode.Children {
+		if node.Type == TEXT {
+			regexString += regexp.QuoteMeta(node.Value)
+		}
+
+		if node.Type == VARIABLE {
+			variableName := node.GetChildByType(VARIABLE_NAME).Value
+
+			variableTypeAsString := node.GetChildByType(VARIABLE_TYPE).Value
+			variableType, err := model.GetVariableTypeByName(variableTypeAsString)
+
+			if err != nil {
+				panic(err) //todo fixme
+			}
+
+			variables = append(variables, model.Variable{
+				Name: variableName,
+				Type: variableType,
+			})
+
+			regexString += variableType.RegexTemplate()
+		}
+	}
+
+	_model.Variables = variables
+	_model.Regex = regexp.MustCompile(regexString)
+	return _model
+}
+
+func (p *parser) applyParseRules() {
 	for {
 		anyRuleWasApplied := false
 
@@ -39,14 +101,14 @@ func (p *parser) Parse() common.Node {
 		}
 	}
 
-	return p.nodes[0]
+	p.rootNode = p.nodes[0]
 }
 
 // region Node types
 
 const (
 	ROOT          common.NodeType = "root"
-	TEXT          common.NodeType = "variable"
+	TEXT          common.NodeType = "text"
 	VARIABLE      common.NodeType = "variable"
 	VARIABLE_NAME common.NodeType = "variable_name"
 	VARIABLE_TYPE common.NodeType = "variable_type"
@@ -204,24 +266,19 @@ func mergeToRootNode(p *parser) bool {
 	rootNode.Type = ROOT
 
 	if len(p.nodes) == 0 {
-		rootNode.StartPosition = common.Position{0, 0, 0}
-		rootNode.EndPosition = common.Position{0, 0, 0}
+		rootNode.StartPosition = common.Position{}
+		rootNode.EndPosition = common.Position{}
 
 		p.nodes = append(p.nodes, rootNode)
 		return true
 	}
 
-	if len(p.nodes) == 1 {
-		rootNode.StartPosition = p.nodes[0].StartPosition
-		rootNode.EndPosition = p.nodes[0].EndPosition
-		return true
-	}
-
-	rootNode.StartPosition = common.Position{0, 0, 0}
-	rootNode.EndPosition = common.Position{0, 0, 0}
+	rootNode.StartPosition = p.nodes[0].StartPosition
+	rootNode.EndPosition = p.nodes[0].EndPosition
 
 	for i := 0; i < len(p.nodes); i++ {
 		rootNode.AppendChild(&p.nodes[i])
+		rootNode.EndPosition = p.nodes[i].EndPosition
 	}
 
 	p.nodes = []common.Node{rootNode}

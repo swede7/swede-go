@@ -3,13 +3,14 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"me.weldnor/swede/core/lang/swede-step-definition/model"
+	stepDefinitionParser "me.weldnor/swede/core/lang/swede-step-definition/parser"
+	parser "me.weldnor/swede/core/lang/swede/parser"
 	"strings"
-
-	"me.weldnor/swede/core/lang/swede/parser"
 )
 
 type Runner struct {
-	registeredFuncs map[string]StepFunc
+	stepDefinitionWithFuncList []stepDefinitionWithFunc
 
 	beforeScenarioFunc HandlerFunc
 	afterScenarioFunc  HandlerFunc
@@ -21,8 +22,15 @@ type Runner struct {
 	scenarios   []Scenario
 }
 
+type stepDefinitionWithFunc struct {
+	StepFunc       StepFunc
+	StepDefinition model.StepDefinition
+}
+
 type StepFunc func(*Context) error
 type HandlerFunc func(*Context)
+
+// stepFunc + stepDefinition
 
 func NewRunner() *Runner {
 	return new(Runner)
@@ -46,7 +54,7 @@ func (r *Runner) LoadFeatureFile(path string) {
 
 		for _, stepNode := range scenarioNode.GetChildrenByType(parser.STEP) {
 			step := Step{}
-			step.Name = strings.TrimSpace(stepNode.Value)
+			step.Text = strings.TrimSpace(stepNode.Value)
 			scenario.Steps = append(scenario.Steps, step)
 		}
 
@@ -56,12 +64,24 @@ func (r *Runner) LoadFeatureFile(path string) {
 	r.scenarios = scenarios
 }
 
-func (r *Runner) RegisterFunc(name string, registeredFunc StepFunc) {
-	if r.registeredFuncs == nil {
-		r.registeredFuncs = make(map[string]StepFunc)
+func (r *Runner) RegisterFunc(stepDefinitionString string, stepFunc StepFunc) {
+	parserResult, err := stepDefinitionParser.Parse(stepDefinitionString)
+	if err != nil {
+		return
 	}
 
-	r.registeredFuncs[name] = registeredFunc
+	stepDefinition := parserResult.StepDefinition
+
+	for _, _stepDefinitionWithFunc := range r.stepDefinitionWithFuncList {
+		if _stepDefinitionWithFunc.StepDefinition.Text == stepDefinitionString {
+			panic("function already registered")
+		}
+	}
+
+	r.stepDefinitionWithFuncList = append(r.stepDefinitionWithFuncList, stepDefinitionWithFunc{
+		StepFunc:       stepFunc,
+		StepDefinition: stepDefinition,
+	})
 }
 
 func (r *Runner) RegisterBeforeScenarioFunc(registeredFunc HandlerFunc) {
@@ -83,7 +103,7 @@ func (r *Runner) RegisterAfterFeatureFunc(registeredFunc HandlerFunc) {
 func (r *Runner) Run() {
 	fmt.Printf("Running feature %s\n\n", r.featureName)
 
-	context := newContext()
+	context := Clone()
 
 	if r.beforeFeatureFunc != nil {
 		r.beforeFeatureFunc(context)
@@ -117,11 +137,11 @@ func (r *Runner) executeScenario(scenario Scenario, context *Context) {
 
 	for _, step := range scenario.Steps {
 		if isFailed {
-			fmt.Printf("\t\t- Skipping step %s ⚠️\n", step.Name)
+			fmt.Printf("\t\t- Skipping step %s ⚠️\n", step.Text)
 			continue
 		}
 
-		fmt.Printf("\t\t- Running step %s ", step.Name)
+		fmt.Printf("\t\t- Running step %s ", step.Text)
 
 		result := r.executeStep(step, context)
 
@@ -149,18 +169,36 @@ type stepExecutionResult struct {
 }
 
 func (r *Runner) executeStep(step Step, context *Context) stepExecutionResult {
-	stepName := step.Name
-	registeredFunc, ok := r.registeredFuncs[stepName]
+	stepText := step.Text
+	stepDefinitionWithFunc, err := r.findStepDefinitionWithFuncByStepText(stepText)
 
-	if !ok {
-		return stepExecutionResult{status: failed, error: errors.New("step is not defined")}
+	if err != nil {
+		return stepExecutionResult{status: failed, error: err}
 	}
 
-	err := registeredFunc(context)
+	stepDefinition := stepDefinitionWithFunc.StepDefinition
+
+	// setting up step variables
+	parsedVariables := stepDefinition.GetParsedValues(stepText)
+	for _, parsedVariable := range parsedVariables {
+		context.SetVariable(parsedVariable.Name, parsedVariable.Value)
+	}
+
+	err = stepDefinitionWithFunc.StepFunc(context)
 
 	if err != nil {
 		return stepExecutionResult{status: failed, error: err}
 	}
 
 	return stepExecutionResult{status: passed}
+}
+
+func (r *Runner) findStepDefinitionWithFuncByStepText(stepText string) (stepDefinitionWithFunc, error) {
+	for _, _stepDefinitionWithFunc := range r.stepDefinitionWithFuncList {
+		if _stepDefinitionWithFunc.StepDefinition.Check(stepText) {
+			return _stepDefinitionWithFunc, nil
+		}
+	}
+
+	return stepDefinitionWithFunc{}, errors.New("step not defined")
 }

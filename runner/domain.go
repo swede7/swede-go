@@ -11,7 +11,7 @@ type Scenario struct {
 }
 
 type Step struct {
-	Name string
+	Text string
 }
 
 type ScenarioExecutionResult struct {
