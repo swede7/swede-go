@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,4 +60,17 @@ func TestParse(t *testing.T) {
 	secondVariableModel := _model.Variables[1]
 	assert.Equal(t, "second", secondVariableModel.Name)
 	assert.Equal(t, model.String, secondVariableModel.Type)
+}
+
+func TestParseWithError(t *testing.T) {
+	//todo remove it
+	code := "Add second <asdasd:"
+
+	parserResult, err := parser.Parse(code)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(parserResult)
 }

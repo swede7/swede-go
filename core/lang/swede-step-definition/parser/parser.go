@@ -12,6 +12,7 @@ type parser struct {
 	lexemes []common.Lexeme
 	nodes   []common.Node
 	pos     int
+	errors  []common.ParserError
 
 	rootNode common.Node //after Parse()
 	model    model.StepDefinition
@@ -42,7 +43,7 @@ func (p *parser) Parse() (*ParserResult, error) {
 	result := ParserResult{}
 	result.StepDefinition = _model
 	result.RootNode = p.rootNode
-	result.Errors = make([]common.ParserError, 0) //todo fixme
+	result.Errors = p.errors
 
 	return &result, nil
 }
@@ -165,6 +166,10 @@ func addNodeRule(p *parser) bool {
 }
 
 func mergeColonAndTextRule(p *parser) bool {
+	if p.isEnd() {
+		return false
+	}
+
 	changed := false
 
 	updatedNodes := make([]common.Node, 0)
@@ -277,6 +282,16 @@ func mergeToRootNode(p *parser) bool {
 	rootNode.EndPosition = p.nodes[0].EndPosition
 
 	for i := 0; i < len(p.nodes); i++ {
+		currentNode := p.nodes[i]
+
+		if currentNode.Type != TEXT && currentNode.Type != VARIABLE {
+			p.errors = append(p.errors, common.ParserError{
+				StartPosition: currentNode.StartPosition,
+				EndPosition:   currentNode.EndPosition,
+				Message:       "unexpected symbol",
+			})
+		}
+
 		rootNode.AppendChild(&p.nodes[i])
 		rootNode.EndPosition = p.nodes[i].EndPosition
 	}
