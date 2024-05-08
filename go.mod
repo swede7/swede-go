@@ -1,8 +1,9 @@
-module  github.com/swede7/swede-go
+module github.com/swede7/swede-go
 
 go 1.22
 
 require (
+	github.com/dave/dst v0.27.3
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tliron/commonlog v0.2.11
@@ -10,7 +11,6 @@ require (
 )
 
 require (
-	github.com/dave/dst v0.27.3 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 )
@@ -37,6 +37,6 @@ require (
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/tools v0.20.0
+	golang.org/x/tools v0.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
