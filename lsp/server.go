@@ -4,6 +4,7 @@ import (
 	// Must include a backend implementation
 	// See CommonLog for other options: https://github.com/tliron/commonlog
 	"errors"
+	"me.weldnor/swede/lsp/util"
 
 	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp"
@@ -42,21 +43,28 @@ func (l *LspServer) Start() {
 	}
 	server := server.NewServer(&handler, lsName, false)
 
+	util.Logger.Println("starting lsp server ...")
 	server.RunStdio()
 }
 
-func textDocumentDidSave(context *glsp.Context, params *protocol.DidSaveTextDocumentParams) error {
+func textDocumentDidSave(ctx *glsp.Context, params *protocol.DidSaveTextDocumentParams) error {
+	util.Logger.Printf("document saved")
+
+	publishDiagnostic(ctx.Notify)
+
 	return nil
 }
 
 func TextDocumentDidChange(ctx *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
+	util.Logger.Printf("document changed")
 	ContentChangeEventWhole, ok := params.ContentChanges[0].(protocol.TextDocumentContentChangeEventWhole)
 	if !ok {
 		panic(errors.New("cant process document did change error"))
 	}
-
+	//fixme race condition?
 	context.GetContext().Code = ContentChangeEventWhole.Text
 	context.GetContext().URI = params.TextDocument.URI
+	context.GetContext().FileExtension = context.GetFileExtensionByURL(params.TextDocument.URI)
 
 	publishDiagnostic(ctx.Notify)
 
@@ -64,15 +72,18 @@ func TextDocumentDidChange(ctx *glsp.Context, params *protocol.DidChangeTextDocu
 }
 
 func textDocumentDidOpen(ctx *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	util.Logger.Printf("document opened")
+
 	context.GetContext().Code = params.TextDocument.Text
 	context.GetContext().URI = params.TextDocument.URI
+	context.GetContext().FileExtension = context.GetFileExtensionByURL(params.TextDocument.URI)
 
 	publishDiagnostic(ctx.Notify)
 
 	return nil
 }
 
-func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, error) {
+func initialize(ctx *glsp.Context, params *protocol.InitializeParams) (any, error) {
 	capabilities := handler.CreateServerCapabilities()
 	capabilities.DocumentFormattingProvider = true
 	capabilities.SemanticTokensProvider = protocol.SemanticTokensOptions{
@@ -91,41 +102,38 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 	}, nil
 }
 
-func initialized(context *glsp.Context, params *protocol.InitializedParams) error {
+func initialized(ctx *glsp.Context, params *protocol.InitializedParams) error {
 	return nil
 }
 
-func shutdown(context *glsp.Context) error {
+func shutdown(ctx *glsp.Context) error {
 	protocol.SetTraceValue(protocol.TraceValueOff)
 
 	return nil
 }
 
-func setTrace(context *glsp.Context, params *protocol.SetTraceParams) error {
+func setTrace(ctx *glsp.Context, params *protocol.SetTraceParams) error {
 	protocol.SetTraceValue(params.Value)
 
 	return nil
 }
 
-func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentFormattingParams) ([]protocol.TextEdit, error) {
+// region LSP features
+
+func textDocumentFormatting(ctx *glsp.Context, params *protocol.DocumentFormattingParams) ([]protocol.TextEdit, error) {
+	util.Logger.Printf("request document formatting")
 	return format.Format()
 }
 
-func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
+func textDocumentSemanticTokensFull(ctx *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
+	util.Logger.Printf("request document semantic tokens")
 	return highlight.Highlight()
 }
 
 func publishDiagnostic(notifyFunc glsp.NotifyFunc) {
+	util.Logger.Printf("request document diagnostic")
 	go notifyFunc(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
 		URI:         context.GetContext().URI,
 		Diagnostics: diagnostic.Diagnostic(),
 	})
-}
-
-func updateCode(newCode string) {
-	context.GetContext().Code = newCode
-}
-
-func getCode() string {
-	return context.GetContext().Code
 }

@@ -3,8 +3,9 @@ package context
 var instance *LspContext
 
 type LspContext struct {
-	Code string
-	URI  string
+	Code          string
+	URI           string
+	FileExtension FileExtension
 }
 
 func GetContext() *LspContext {

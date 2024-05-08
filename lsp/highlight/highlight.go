@@ -22,6 +22,14 @@ const (
 )
 
 func Highlight() (*protocol.SemanticTokens, error) {
+	if context.GetContext().FileExtension == context.Swede {
+		return HighlightSwede()
+	}
+
+	return &protocol.SemanticTokens{}, nil // fixme?
+}
+
+func HighlightSwede() (*protocol.SemanticTokens, error) {
 	code := context.GetContext().Code
 
 	parserResult := parser.ParseCode(code)

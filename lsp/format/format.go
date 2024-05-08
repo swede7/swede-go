@@ -11,6 +11,14 @@ import (
 )
 
 func Format() ([]protocol.TextEdit, error) {
+	if context.GetContext().FileExtension == context.Swede {
+		return FormatSwede()
+	}
+
+	return nil, errors.New("unknown file extension")
+}
+
+func FormatSwede() ([]protocol.TextEdit, error) {
 	code := context.GetContext().Code
 
 	parserResult := parser.ParseCode(code)
