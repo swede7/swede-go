@@ -9,8 +9,8 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
-	"me.weldnor/swede/core/lang/swede/linter"
-	"me.weldnor/swede/core/lang/swede/parser"
+	"github.com/swede7/swede-go/core/lang/swede/linter"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
 )
 
 // lintCmd represents the lint command.

@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/swede7/swede-go/core/lang/swede/formatter"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
+	"github.com/swede7/swede-go/lsp/context"
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	"me.weldnor/swede/core/lang/swede/formatter"
-	"me.weldnor/swede/core/lang/swede/parser"
-	"me.weldnor/swede/lsp/context"
 )
 
 func Format() ([]protocol.TextEdit, error) {

@@ -4,16 +4,16 @@ import (
 	// Must include a backend implementation
 	// See CommonLog for other options: https://github.com/tliron/commonlog
 	"errors"
-	"me.weldnor/swede/lsp/util"
+	"github.com/swede7/swede-go/lsp/util"
 
+	"github.com/swede7/swede-go/lsp/context"
+	"github.com/swede7/swede-go/lsp/diagnostic"
+	"github.com/swede7/swede-go/lsp/format"
+	"github.com/swede7/swede-go/lsp/highlight"
 	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"github.com/tliron/glsp/server"
-	"me.weldnor/swede/lsp/context"
-	"me.weldnor/swede/lsp/diagnostic"
-	"me.weldnor/swede/lsp/format"
-	"me.weldnor/swede/lsp/highlight"
 )
 
 const lsName = "swede"

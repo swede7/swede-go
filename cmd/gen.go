@@ -9,7 +9,7 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
-	"me.weldnor/swede/generator"
+	"github.com/swede7/swede-go/generator"
 )
 
 var featureFiles []string

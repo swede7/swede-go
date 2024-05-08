@@ -1,6 +1,6 @@
 package parser
 
-import "me.weldnor/swede/core/lang/common"
+import "github.com/swede7/swede-go/core/lang/common"
 
 const (
 	ROOT       common.NodeType = "ROOT"

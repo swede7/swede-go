@@ -3,7 +3,7 @@ package example_test
 import (
 	"errors"
 	"fmt"
-	"me.weldnor/swede/runner"
+	"github.com/swede7/swede-go/runner"
 	"testing"
 	"time"
 )

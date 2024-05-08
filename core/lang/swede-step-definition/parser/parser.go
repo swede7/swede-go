@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"me.weldnor/swede/core/lang/common"
-	"me.weldnor/swede/core/lang/swede-step-definition/lexer"
-	"me.weldnor/swede/core/lang/swede-step-definition/model"
+	"github.com/swede7/swede-go/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/lexer"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/model"
 	"regexp"
 )
 

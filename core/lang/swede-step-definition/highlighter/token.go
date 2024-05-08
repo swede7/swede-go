@@ -1,8 +1,8 @@
 package highlight
 
 import (
-	"me.weldnor/swede/core/lang/common"
-	"me.weldnor/swede/core/lang/swede-step-definition/parser"
+	"github.com/swede7/swede-go/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/parser"
 )
 
 type TokenType string

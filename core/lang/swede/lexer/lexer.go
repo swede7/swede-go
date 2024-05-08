@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"me.weldnor/swede/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/common"
 )
 
 type Lexer struct {

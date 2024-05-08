@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"me.weldnor/swede/lsp"
+	"github.com/swede7/swede-go/lsp"
 )
 
 var stdioFlag bool

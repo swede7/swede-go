@@ -3,7 +3,7 @@ package generator_test
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/generator"
+	"github.com/swede7/swede-go/generator"
 	"os"
 	"strings"
 	"testing"

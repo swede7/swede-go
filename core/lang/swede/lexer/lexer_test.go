@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lang/common"
-	"me.weldnor/swede/core/lang/swede/lexer"
+	"github.com/swede7/swede-go/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/swede/lexer"
 )
 
 const code string = `

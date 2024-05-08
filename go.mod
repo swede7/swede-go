@@ -1,4 +1,4 @@
-module me.weldnor/swede
+module  github.com/swede7/swede-go
 
 go 1.22
 

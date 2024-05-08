@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lang/swede/parser"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
 )
 
 const code string = `

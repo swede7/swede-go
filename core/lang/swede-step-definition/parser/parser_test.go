@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lang/swede-step-definition/model"
-	"me.weldnor/swede/core/lang/swede-step-definition/parser"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/model"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/parser"
 )
 
 func TestParse(t *testing.T) {

@@ -290,7 +290,7 @@ package main
 
 import(
     "testing"
-    "me.weldnor/swede/runner"
+    "github.com/swede7/swede-go/runner"
 )
 
 func TestSwedeRunner(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"me.weldnor/swede/core/lang/swede/linter"
-	"me.weldnor/swede/core/lang/swede/parser"
+	"github.com/swede7/swede-go/core/lang/swede/linter"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
 )
 
 func Test_emptyFeatureTextRule(t *testing.T) {

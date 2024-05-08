@@ -1,6 +1,6 @@
 package lexer
 
-import "me.weldnor/swede/core/lang/common"
+import "github.com/swede7/swede-go/core/lang/common"
 
 const (
 	NL            common.LexemeType = "NL"

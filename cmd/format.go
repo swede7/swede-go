@@ -9,8 +9,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"me.weldnor/swede/core/lang/swede/formatter"
-	"me.weldnor/swede/core/lang/swede/parser"
+	"github.com/swede7/swede-go/core/lang/swede/formatter"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
 )
 
 // formatCmd represents the format command.

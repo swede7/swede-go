@@ -3,11 +3,11 @@ package diagnostic
 import (
 	"strings"
 
+	stepDefinitionParser "github.com/swede7/swede-go/core/lang/swede-step-definition/parser"
+	parser "github.com/swede7/swede-go/core/lang/swede/parser"
+	"github.com/swede7/swede-go/lsp/context"
+	"github.com/swede7/swede-go/lsp/util"
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	stepDefinitionParser "me.weldnor/swede/core/lang/swede-step-definition/parser"
-	parser "me.weldnor/swede/core/lang/swede/parser"
-	"me.weldnor/swede/lsp/context"
-	"me.weldnor/swede/lsp/util"
 )
 
 func Diagnostic() []protocol.Diagnostic {

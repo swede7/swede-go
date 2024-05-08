@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"me.weldnor/swede/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/common"
 )
 
 func Lex(source string) ([]common.Lexeme, error) {

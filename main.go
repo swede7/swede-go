@@ -3,7 +3,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "me.weldnor/swede/cmd"
+import "github.com/swede7/swede-go/cmd"
 
 func main() {
 	cmd.Execute()

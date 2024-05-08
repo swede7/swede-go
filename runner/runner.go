@@ -3,9 +3,9 @@ package runner
 import (
 	"errors"
 	"fmt"
-	"me.weldnor/swede/core/lang/swede-step-definition/model"
-	stepDefinitionParser "me.weldnor/swede/core/lang/swede-step-definition/parser"
-	parser "me.weldnor/swede/core/lang/swede/parser"
+	"github.com/swede7/swede-go/core/lang/swede-step-definition/model"
+	stepDefinitionParser "github.com/swede7/swede-go/core/lang/swede-step-definition/parser"
+	parser "github.com/swede7/swede-go/core/lang/swede/parser"
 	"strings"
 )
 

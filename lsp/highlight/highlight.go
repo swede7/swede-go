@@ -1,10 +1,10 @@
 package highlight
 
 import (
+	"github.com/swede7/swede-go/core/lang/common"
+	"github.com/swede7/swede-go/core/lang/swede/parser"
+	"github.com/swede7/swede-go/lsp/context"
 	protocol "github.com/tliron/glsp/protocol_3_16"
-	"me.weldnor/swede/core/lang/common"
-	"me.weldnor/swede/core/lang/swede/parser"
-	"me.weldnor/swede/lsp/context"
 )
 
 type highlightToken struct {
