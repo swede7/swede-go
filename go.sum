@@ -49,6 +49,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/swede7/swede-go/core v0.1.0 h1:kdpVI4e9/EqlNrbotOAuQ9Mn7yNXt0rJ8cDsrUf5qM8=
 github.com/swede7/swede-go/core v0.1.0/go.mod h1:iDAcDtN33kqIEd6p+PsA5GAxGou2mMdMJ5nQpnvkbcQ=
+github.com/swede7/swede-go/core v0.1.1 h1:7rPJKT8l0azCL5DmDWOZGMX0o9K+cMykIVd4YUET6Ls=
+github.com/swede7/swede-go/core v0.1.1/go.mod h1:iDAcDtN33kqIEd6p+PsA5GAxGou2mMdMJ5nQpnvkbcQ=
 github.com/tliron/commonlog v0.2.17 h1:GFVvzDZbNLkuQfT45IZeWkrR5AyqiX7Du8pWAtFuPTY=
 github.com/tliron/commonlog v0.2.17/go.mod h1:J2Hb63/mMjYmkDzd7E+VL9wCHT6NFNSzV/IOjJWMJqc=
 github.com/tliron/glsp v0.2.2 h1:IKPfwpE8Lu8yB6Dayta+IyRMAbTVunudeauEgjXBt+c=

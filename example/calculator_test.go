@@ -3,14 +3,15 @@ package example_test
 import (
 	"errors"
 	"fmt"
-	"github.com/swede7/swede-go/runner"
 	"testing"
 	"time"
+
+	"github.com/swede7/swede-go/runner"
 )
 
 //go:generate swede gen -f ./feature/calculator.feature
 
-// swede:step Add <first:int> and <second:in>
+// swede:step Add <first:int> and <second:int>
 func addIntAndInt(ctx *runner.Context) error {
 	result := ctx.GetIntVariable("first") + ctx.GetIntVariable("second")
 	ctx.SetVariable("result", result)
