@@ -26,7 +26,7 @@ func Highlight() (*protocol.SemanticTokens, error) {
 		return HighlightSwede()
 	}
 
-	return &protocol.SemanticTokens{}, nil // fixme?
+	return nil, nil // fixme?
 }
 
 func HighlightSwede() (*protocol.SemanticTokens, error) {

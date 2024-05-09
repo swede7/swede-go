@@ -33,6 +33,7 @@ require (
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/sourcegraph/jsonrpc2 v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/swede7/swede-go/core v0.1.0 // indirect
 	github.com/tliron/kutil v0.3.24 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
@@ -41,3 +42,5 @@ require (
 	golang.org/x/tools v0.21.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/swede7/swede-go/core v0.1.0 => ./core

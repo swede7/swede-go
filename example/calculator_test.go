@@ -10,7 +10,7 @@ import (
 
 //go:generate swede gen -f ./feature/calculator.feature
 
-// swede:step Add <first:int> and <second:int>
+// swede:step Add <first:int> and <second:in>
 func addIntAndInt(ctx *runner.Context) error {
 	result := ctx.GetIntVariable("first") + ctx.GetIntVariable("second")
 	ctx.SetVariable("result", result)

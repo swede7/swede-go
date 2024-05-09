@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"github.com/swede7/swede-go/core/lang/common"
 	"github.com/swede7/swede-go/core/lang/swede-step-definition/lexer"
 	"github.com/swede7/swede-go/core/lang/swede-step-definition/model"
@@ -38,17 +39,20 @@ func Parse(source string) (*ParserResult, error) {
 func (p *parser) Parse() (*ParserResult, error) {
 	p.applyParseRules()
 
-	_model := p.getModel()
-
+	_model, err := p.getModel()
 	result := ParserResult{}
-	result.StepDefinition = _model
+
+	if err == nil {
+		result.StepDefinition = _model
+	}
+
 	result.RootNode = p.rootNode
 	result.Errors = p.errors
 
 	return &result, nil
 }
 
-func (p *parser) getModel() model.StepDefinition {
+func (p *parser) getModel() (model.StepDefinition, error) {
 	_model := model.StepDefinition{}
 	_model.Text = p.source
 
@@ -68,7 +72,12 @@ func (p *parser) getModel() model.StepDefinition {
 			variableType, err := model.GetVariableTypeByName(variableTypeAsString)
 
 			if err != nil {
-				panic(err) //todo fixme
+				p.errors = append(p.errors, common.ParserError{
+					StartPosition: node.StartPosition,
+					EndPosition:   node.EndPosition,
+					Message:       "unknown variable type",
+				})
+				return model.StepDefinition{}, errors.New("unknown variable type")
 			}
 
 			variables = append(variables, model.Variable{
@@ -82,7 +91,7 @@ func (p *parser) getModel() model.StepDefinition {
 
 	_model.Variables = variables
 	_model.Regex = regexp.MustCompile(regexString)
-	return _model
+	return _model, nil
 }
 
 func (p *parser) applyParseRules() {

@@ -2,6 +2,9 @@
     "go.lintTool": "golangci-lint",
     "go.lintFlags": ["--fast"],
     "go.useLanguageServer": true,
+    "go.alternateTools": {
+        "gopls": "C:\\Users\\Anton\\Develop\\swede-gopls\\gopls\\gopls.exe",
+    },
     "gopls": {
         "formatting.gofumpt": true
     }
