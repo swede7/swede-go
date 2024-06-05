@@ -4,19 +4,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator"
-	"github.com/dave/dst/dstutil"
 	"go/token"
 	"strings"
 	"text/template"
+
+	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
+	"github.com/dave/dst/dstutil"
 )
 
 type Generator struct {
 	featureFiles []string
 	source       string
 
-	//parser data
+	// parser data
 	dstFile *dst.File
 
 	stepDefinitions []struct {
@@ -119,7 +120,6 @@ func (g *Generator) parseSourceFile() {
 	g.printDebugMessage("parsing source file...")
 
 	dstFile, err := decorator.Parse(g.source)
-
 	if err != nil {
 		panic(errors.New("can't parse file"))
 	}
@@ -131,7 +131,6 @@ func (g *Generator) formatGeneratedFile() string {
 	buf := bytes.Buffer{}
 
 	err := decorator.Fprint(&buf, g.dstFile)
-
 	if err != nil {
 		panic(err)
 	}
@@ -148,7 +147,6 @@ func (g *Generator) findStepDefinitionFuncs() {
 		}
 
 		comment, err := funcDeclGetComment(fd, isSwedeStepDefinitionComment)
-
 		if err != nil {
 			panic(err)
 		}
@@ -208,7 +206,6 @@ func (g *Generator) findHandlersFunc() {
 
 		if funcDeclHasComment(fd, hasSwedeBeforeFeatureComment) {
 			g.beforeFeatureFuncName = funcName
-
 		}
 
 		if funcDeclHasComment(fd, hasSwedeAfterFeatureComment) {
@@ -244,7 +241,6 @@ func (g *Generator) isTestRunnerFuncDecl(decl dst.Decl) bool {
 }
 
 func (g *Generator) insertTestRunnerFuncDecl(funcDecl *dst.FuncDecl) {
-
 	g.dstFile.Decls = append(g.dstFile.Decls, funcDecl)
 }
 
@@ -294,7 +290,7 @@ import(
 )
 
 func TestSwedeRunner(t *testing.T) {
-    _runner := runner.NewRunner()
+	_runner := runner.NewRunner(runner.RunnerConfig{T:t})
 
 {{range $key, $value := .featureFiles}} 
     _runner.LoadFeatureFile("{{$value}}")
@@ -344,15 +340,16 @@ func (g *Generator) generateTestRunnerFuncDecl() *dst.FuncDecl {
 	g.printDebugMessage(g.stepDefinitions)
 
 	templateAst, err := decorator.Parse(buf.String())
-
 	if err != nil {
 		panic(err)
 	}
 
 	g.printDebugMessage(templateAst.Decls)
 
-	decl := templateAst.Decls[1] //skip import declaration
+	decl := templateAst.Decls[1] // skip import declaration
 	funcDecl, ok := decl.(*dst.FuncDecl)
+
+	print(funcDecl)
 
 	if !ok {
 		panic("oops")

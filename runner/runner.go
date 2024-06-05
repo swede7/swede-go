@@ -3,10 +3,12 @@ package runner
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/swede7/swede-go/core/lang/swede-step-definition/model"
 	stepDefinitionParser "github.com/swede7/swede-go/core/lang/swede-step-definition/parser"
 	parser "github.com/swede7/swede-go/core/lang/swede/parser"
-	"strings"
 )
 
 type Runner struct {
@@ -20,6 +22,8 @@ type Runner struct {
 
 	featureName string
 	scenarios   []Scenario
+
+	t *testing.T
 }
 
 type stepDefinitionWithFunc struct {
@@ -27,13 +31,23 @@ type stepDefinitionWithFunc struct {
 	StepDefinition model.StepDefinition
 }
 
-type StepFunc func(*Context) error
-type HandlerFunc func(*Context)
+type (
+	StepFunc    func(*Context) error
+	HandlerFunc func(*Context)
+)
 
 // stepFunc + stepDefinition
 
-func NewRunner() *Runner {
-	return new(Runner)
+type RunnerConfig struct {
+	T *testing.T
+}
+
+func NewRunner(config RunnerConfig) *Runner {
+	runner := Runner{
+		t: config.T,
+	}
+
+	return &runner
 }
 
 func (r *Runner) LoadFeatureFile(path string) {
@@ -110,12 +124,29 @@ func (r *Runner) Run() {
 	}
 
 	for _, scenario := range r.scenarios {
-		r.executeScenario(scenario, context)
+		if r.t != nil {
+			r.executeScenarioWithT(scenario, context)
+		} else {
+			r.executeScenarioWithoutT(scenario, context)
+		}
 	}
 
 	if r.afterFeatureFunc != nil {
 		r.afterFeatureFunc(context)
 	}
+}
+
+func (r *Runner) executeScenarioWithT(scenario Scenario, context *Context) {
+	r.t.Run(scenario.Name, func(t *testing.T) {
+		result := r.executeScenario(scenario, context)
+		if result.status == failed {
+			t.Errorf("Scenario failed")
+		}
+	})
+}
+
+func (r *Runner) executeScenarioWithoutT(scenario Scenario, context *Context) {
+	r.executeScenario(scenario, context)
 }
 
 type executionStatus string
@@ -126,7 +157,12 @@ const (
 	skipped executionStatus = "skipped"
 )
 
-func (r *Runner) executeScenario(scenario Scenario, context *Context) {
+type scenarioExecutionResult struct {
+	status executionStatus
+	error  error
+}
+
+func (r *Runner) executeScenario(scenario Scenario, context *Context) scenarioExecutionResult {
 	fmt.Printf("\tRunning scenario %s\n\n", scenario.Name)
 
 	if r.beforeScenarioFunc != nil {
@@ -161,6 +197,11 @@ func (r *Runner) executeScenario(scenario Scenario, context *Context) {
 	}
 
 	fmt.Println()
+
+	if isFailed {
+		return scenarioExecutionResult{status: failed}
+	}
+	return scenarioExecutionResult{status: passed}
 }
 
 type stepExecutionResult struct {
@@ -171,7 +212,6 @@ type stepExecutionResult struct {
 func (r *Runner) executeStep(step Step, context *Context) stepExecutionResult {
 	stepText := step.Text
 	stepDefinitionWithFunc, err := r.findStepDefinitionWithFuncByStepText(stepText)
-
 	if err != nil {
 		return stepExecutionResult{status: failed, error: err}
 	}
@@ -185,7 +225,6 @@ func (r *Runner) executeStep(step Step, context *Context) stepExecutionResult {
 	}
 
 	err = stepDefinitionWithFunc.StepFunc(context)
-
 	if err != nil {
 		return stepExecutionResult{status: failed, error: err}
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/swede7/swede-go/runner"
 )
 
-//go:generate swede gen -f ./feature/calculator.feature
+//go:generate swede-go gen -f ./feature/calculator.feature
 
 // swede:step Add <first:int> and <second:int>
 func addIntAndInt(ctx *runner.Context) error {
@@ -64,7 +64,7 @@ func tearDown(ctx *runner.Context) {
 }
 
 func TestSwedeRunner(t *testing.T) {
-	_runner := runner.NewRunner()
+	_runner := runner.NewRunner(runner.RunnerConfig{T: t})
 	_runner.LoadFeatureFile("./feature/calculator.feature")
 	_runner.RegisterFunc("Add <first:int> and <second:int>", addIntAndInt)
 	_runner.RegisterFunc("Add string <first:string> and <second:string>", addStringAndString)

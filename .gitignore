@@ -2,4 +2,5 @@
 *iml
 *.exe
 
-swede.exe?
+swede-go.exe
+log.txt
